@@ -73,17 +73,22 @@ let rec private isolateSingleVariable eq =
     match varSide with
     | Var name -> Some(name, c)
     | BinaryNode(op, n1, n2) ->
-        let newVarSide, newExpression =
-            match op, hasVariable n2 with
-            | Addition, false -> n1, Const c - n2
-            | Substraction, false -> n1, Const c + n2
-            | Product, false -> n1, Const c / n2
-            | Division, false -> n1, Const c * n2
-            | Addition, true -> n2, Const c - n1
-            | Substraction, true -> n2, n1 - Const c
-            | Product, true -> n2, Const c / n1
-            | Division, true -> failwith "The variable must be in the numerator"
-        isolateSingleVariable(Equality(newVarSide, simplify newExpression))
+        let newEquality =
+            match n1, n2 with
+            | _, Const c2 ->
+                match op with
+                | Addition -> Some(n1, Const (c - c2))
+                | Substraction -> Some(n1, Const (c + c2))
+                | Product -> if c2 <> 0M then Some(n1, Const (c / c2)) else None
+                | Division -> if c2 <> 0M then Some(n1, Const (c * c2)) else None
+            | Const c2, _ ->
+                match op with
+                | Addition -> Some(n2, Const (c - c2))
+                | Substraction -> Some(n2, Const (c2 - c))
+                | Product -> if c2 <> 0M then Some(n2, Const (c / c2)) else None
+                | Division -> failwith "The variable must be in the numerator"
+            | _ -> failwith "There should be a constant on one side"
+        newEquality |> Option.map Equality |> Option.bind isolateSingleVariable
     | _ -> None
     
 let private tryIsolateVariable = function

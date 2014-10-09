@@ -24,14 +24,91 @@ let [<Test>] ``Pattern c = var x is promoted to a binding`` () =
     newBindings |> should equal (Map.ofList ["y", 2M])
 
 let [<Test>] ``A constant is moved away from the variable side for addition`` () =
-    let rules = [ Var("x") + Const(1M) === Var("y") ] |> Set.ofList
-    let bindings = [ "y", 1M ] |> Map.ofList
+    let rules = [ Var("x") + Const(1M) === Const(1M) ] |> Set.ofList
+    let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> step
 
     newRules |> should equal Map.empty
-    newBindings |> should equal (Map.ofList [ "y", 1M
-                                              "x", 0M ])
+    newBindings |> should equal (Map.ofList [ "x", 0M ])
+
+let [<Test>] ``A constant is moved away from the variable side for addition - other side`` () =
+    let rules = [ Const(1M) + Var("x") === Const(1M) ] |> Set.ofList
+    let bindings = Map.empty
+
+    let newRules, newBindings = (rules, bindings) |> step
+
+    newRules |> should equal Map.empty
+    newBindings |> should equal (Map.ofList [ "x", 0M ])
+
+let [<Test>] ``A constant is moved away from the variable side for substraction`` () =
+    let rules = [ Var("x") - Const(1M) === Const(1M) ] |> Set.ofList
+    let bindings = Map.empty
+
+    let newRules, newBindings = (rules, bindings) |> step
+
+    newRules |> should equal Map.empty
+    newBindings |> should equal (Map.ofList [ "x", 2M ])
+
+let [<Test>] ``A constant is moved away from the variable side for substraction - other side`` () =
+    let rules = [ Const(1M) - Var("x") === Const(1M) ] |> Set.ofList
+    let bindings = Map.empty
+
+    let newRules, newBindings = (rules, bindings) |> step
+
+    newRules |> should equal Map.empty
+    newBindings |> should equal (Map.ofList [ "x", 0M ])
+
+let [<Test>] ``A constant is moved away from the variable side for product`` () =
+    let rules = [ Var("x") * Const(2M) === Const(1M) ] |> Set.ofList
+    let bindings = Map.empty
+
+    let newRules, newBindings = (rules, bindings) |> step
+
+    newRules |> should equal Map.empty
+    newBindings |> should equal (Map.ofList [ "x", 0.5M ])
+
+let [<Test>] ``A constant is moved away from the variable side for product - other side`` () =
+    let rules = [ Const(2M) * Var("x") === Const(1M) ] |> Set.ofList
+    let bindings = Map.empty
+
+    let newRules, newBindings = (rules, bindings) |> step
+
+    newRules |> should equal Map.empty
+    newBindings |> should equal (Map.ofList [ "x", 0.5M ])
+
+let [<Test>] ``A constant is moved away from the variable side for division`` () =
+    let rules = [ Var("x") / Const(2M) === Const(1M) ] |> Set.ofList
+    let bindings = Map.empty
+
+    let newRules, newBindings = (rules, bindings) |> step
+
+    newRules |> should equal Map.empty
+    newBindings |> should equal (Map.ofList [ "x", 2M ])
+
+let [<Test>] ``A division by a variable is not supported by this solver`` () =
+    let rules = [ Const(2M) / Var("x") === Const(1M) ] |> Set.ofList
+    let bindings = Map.empty
+
+    (fun () -> (rules, bindings) |> step |> ignore) |> should throw typeof<System.Exception>
+
+let [<Test>] ``A variable multiplied by zero can't be solved`` () =
+    let rules = [ Var("x") * Const(0M) === Const(1M) ] |> Set.ofList
+    let bindings = Map.empty
+
+    let newRules, newBindings = (rules, bindings) |> step
+
+    newRules |> should equal rules
+    newBindings |> should equal Map.empty
+
+let [<Test>] ``A variable divided by zero can't be solved`` () =
+    let rules = [ Var("x") / Const(0M) === Const(1M) ] |> Set.ofList
+    let bindings = Map.empty
+
+    let newRules, newBindings = (rules, bindings) |> step
+
+    newRules |> should equal rules
+    newBindings |> should equal Map.empty
 
 let [<Test>] ``Linear relation with a single variable is solved - solve for net`` () =
     let rules =

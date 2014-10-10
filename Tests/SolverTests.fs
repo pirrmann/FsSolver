@@ -1,4 +1,4 @@
-﻿module Tests
+﻿module SolverTests
 
 open NUnit.Framework
 open FsUnit

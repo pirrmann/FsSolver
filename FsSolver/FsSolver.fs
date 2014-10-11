@@ -18,8 +18,12 @@ type Operator =
         | Product -> (*)
         | Division -> (/)
 
+type Variable =
+    | Local of string with
+    override x.ToString() = match x with | Local name -> name
+
 type Expression =
-    | Var of string
+    | Var of Variable
     | Const of decimal
     | BinaryNode of Operator * Expression * Expression
     static member (+) (x, y) =  BinaryNode(Addition, x, y)
@@ -28,9 +32,11 @@ type Expression =
     static member (/) (x, y) =  BinaryNode(Division, x, y)
     override x.ToString() =
         match x with
-        | Var name -> name
+        | Var id -> id.ToString()
         | Const c -> sprintf "%M" c
         | BinaryNode(op, e1, e2) -> sprintf "(%O %O %O)" e1 op e2
+
+let LocalVar = Local >> Var
 
 type Equality = Equality of Expression * Expression with
     static member Map f e = match e with | Equality(e1, e2) -> Equality(f e1, f e2)
@@ -40,7 +46,7 @@ let (===) expr1 expr2 = Equality(expr1, expr2)
 
 let rec private replaceValues values expression =
     match expression with
-    | Var(name) as v -> match Map.tryFind name values with | Some(value) -> Const(value) | None -> v
+    | Var(id) as v -> match Map.tryFind id values with | Some(value) -> Const(value) | None -> v
     | Const(value) as c -> c
     | BinaryNode(op, e1, e2) -> BinaryNode(op, replaceValues values e1, replaceValues values e2)
 
@@ -53,15 +59,15 @@ let rec private simplify expression =
         | _ -> BinaryNode(op, se1, se2)
     | _ -> expression
 
-let rec private getVariablesNames expression = seq {
+let rec private getVariablesIds expression = seq {
     match expression with
     | BinaryNode(_, e1, e2) ->
-        yield! getVariablesNames e1
-        yield! getVariablesNames e2
-    | Var name -> yield name
+        yield! getVariablesIds e1
+        yield! getVariablesIds e2
+    | Var id -> yield id
     | _ -> () }
 
-let hasVariable = getVariablesNames >> Seq.isEmpty >> not
+let hasVariable = getVariablesIds >> Seq.isEmpty >> not
 
 let rec private isolateSingleVariable eq =
     let varSide, c =
@@ -71,7 +77,7 @@ let rec private isolateSingleVariable eq =
         | _ -> failwith "There should be a constant on one side"
 
     match varSide with
-    | Var name -> Some(name, c)
+    | Var id -> Some(id, c)
     | BinaryNode(op, n1, n2) ->
         let newEquality =
             match n1, n2 with
@@ -93,13 +99,13 @@ let rec private isolateSingleVariable eq =
     
 let private tryIsolateVariable = function
     | Equality(e1, e2) as eq ->
-        let allVariablesNames =
+        let allVariablesIds =
             seq {
-                yield! getVariablesNames e1
-                yield! getVariablesNames e2
+                yield! getVariablesIds e1
+                yield! getVariablesIds e2
             } |> Seq.toList
 
-        if allVariablesNames.Length = 1
+        if allVariablesIds.Length = 1
         then isolateSingleVariable eq
         else None
 
@@ -121,6 +127,6 @@ let step (rules, bindings) =
     let allBindings =
         newBindings
         |> Seq.map snd
-        |> Seq.fold (fun d (name, value) -> Map.add name value d) bindings
+        |> Seq.fold (fun d (id, value) -> Map.add id value d) bindings
     
     (remainingRules, allBindings)

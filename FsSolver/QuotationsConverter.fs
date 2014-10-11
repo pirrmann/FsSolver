@@ -48,7 +48,7 @@ let ToEquality ruleAsExpression =
             BinaryNode(Product, mapExpression e1, mapExpression e2)
         | DerivedPatterns.SpecificCall <@ (/) @> (None, _, [e1; e2]) ->
             BinaryNode(Division, mapExpression e1, mapExpression e2)
-        | Patterns.Var v -> Var (v.ToString())
+        | Patterns.Var v -> LocalVar (v.ToString())
         | Decimal d -> Const(d)
         | _ -> failwith "Not supported pattern"
 

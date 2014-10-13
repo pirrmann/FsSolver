@@ -21,7 +21,10 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\FsSolver.XML</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -49,8 +52,9 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="FsSolver.fs" />
-    <Compile Include="QuotationsConverter.fs" />
+    <Compile Include="FsSolver.Expressions.fs" />
+    <Compile Include="FsSolver.Quotations.fs" />
+    <Compile Include="FsSolver.Solver.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

@@ -1,14 +1,38 @@
 ﻿namespace FsSolver
 
+type Scope = { Name:string; Children: Scope list }
+    with static member Named name = { Name = name; Children = []}
+
 module Solver =
+
+    // Concretization
+    let rec concretize scope expression =
+        let exprWithChildrenReplaced =
+            match expression with
+            | Sum e ->
+                scope.Children
+                |> Seq.map (fun s -> concretize s e)
+                |> Seq.reduce (+)
+            | _ -> expression
+        addScopeToVariables exprWithChildrenReplaced scope
+    and private addScopeToVariables expression scope =
+        match expression with
+        | Var v -> Var (Scoped(scope.Name, v))
+        | BinaryNode(op, e1, e2) ->
+            BinaryNode(op, concretize scope e1, concretize scope e2)
+        | _ -> expression
+
+    // Actual solving
     let rec private replaceValues values expression =
         match expression with
+        | Sum _ -> failwith "Sum expressions have to be made concrete before starting solving"
         | Var(id) as v -> match Map.tryFind id values with | Some(value) -> Const(value) | None -> v
         | Const(value) as c -> c
         | BinaryNode(op, e1, e2) -> BinaryNode(op, replaceValues values e1, replaceValues values e2)
 
     let rec private simplify expression =
         match expression with
+        | Sum _ -> failwith "Sum expressions have to be made concrete before starting solving"
         | BinaryNode(op, e1, e2) ->
             let se1, se2 = simplify e1, simplify e2
             match se1, se2 with
@@ -18,6 +42,7 @@ module Solver =
 
     let rec private getVariablesIds expression = seq {
         match expression with
+        | Sum _ -> failwith "Sum expressions have to be made concrete before starting solving"
         | BinaryNode(_, e1, e2) ->
             yield! getVariablesIds e1
             yield! getVariablesIds e2

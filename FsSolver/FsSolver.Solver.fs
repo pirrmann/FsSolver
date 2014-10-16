@@ -13,6 +13,10 @@ module Solver =
                 scope.Children
                 |> Seq.map (fun s -> concretize s e)
                 |> Seq.reduce (+)
+            | Min e ->
+                scope.Children
+                |> Seq.map (fun s -> concretize s e)
+                |> Seq.reduce (fun x y -> BinaryNode(IfLowerThan, x, y))
             | _ -> expression
         addScopeToVariables exprWithChildrenReplaced scope
     and private addScopeToVariables expression scope =
@@ -22,10 +26,22 @@ module Solver =
             BinaryNode(op, concretize scope e1, concretize scope e2)
         | _ -> expression
 
+    let rec concretizeRule scope rule =
+        seq {
+            match rule with
+            | Relation e ->
+                yield e |> Equality.Map (concretize scope)
+            | ForAllChildren childRule ->
+                for childScope in scope.Children do
+                let concreteChildRule = concretizeRule childScope childRule
+                yield! concreteChildRule |> Seq.map (Equality.Map (concretize scope))
+        }
+
     // Actual solving
     let rec private replaceValues values expression =
         match expression with
         | Sum _ -> failwith "Sum expressions have to be made concrete before starting solving"
+        | Min _ -> failwith "Min expressions have to be made concrete before starting solving"
         | Var(id) as v -> match Map.tryFind id values with | Some(value) -> Const(value) | None -> v
         | Const(value) as c -> c
         | BinaryNode(op, e1, e2) -> BinaryNode(op, replaceValues values e1, replaceValues values e2)
@@ -33,6 +49,7 @@ module Solver =
     let rec private simplify expression =
         match expression with
         | Sum _ -> failwith "Sum expressions have to be made concrete before starting solving"
+        | Min _ -> failwith "Min expressions have to be made concrete before starting solving"
         | BinaryNode(op, e1, e2) ->
             let se1, se2 = simplify e1, simplify e2
             match se1, se2 with
@@ -69,12 +86,14 @@ module Solver =
                     | Substraction -> Some(n1, Const (c + c2))
                     | Product -> if c2 <> 0M then Some(n1, Const (c / c2)) else None
                     | Division -> if c2 <> 0M then Some(n1, Const (c * c2)) else None
+                    | IfLowerThan -> None
                 | Const c2, _ ->
                     match op with
                     | Addition -> Some(n2, Const (c - c2))
                     | Substraction -> Some(n2, Const (c2 - c))
                     | Product -> if c2 <> 0M then Some(n2, Const (c / c2)) else None
                     | Division -> failwith "The variable must be in the numerator"
+                    | IfLowerThan -> None
                 | _ -> failwith "There should be a constant on one side"
             newEquality |> Option.map Equality |> Option.bind isolateSingleVariable
         | _ -> None

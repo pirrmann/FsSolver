@@ -5,18 +5,21 @@ type Operator =
     | Substraction
     | Product
     | Division
-    override op.ToString() =
+    | IfLowerThan
+    member op.FormatString =
         match op with
-        | Addition -> "+"
-        | Substraction -> "-"
-        | Product -> "*"
-        | Division -> "/"
+        | Addition -> "%O + %O"
+        | Substraction -> "%O - %O"
+        | Product -> "%O * %O"
+        | Division -> "%O / %O"
+        | IfLowerThan -> "min(%O, %O)"
     member op.ToOperator:(decimal->decimal->decimal) =
         match op with
         | Addition -> (+)
         | Substraction -> (-)
         | Product -> (*)
         | Division -> (/)
+        | IfLowerThan -> min
 
 type Variable =
     | Local of string
@@ -30,6 +33,7 @@ type Expression =
     | Const of decimal
     | BinaryNode of Operator * Expression * Expression
     | Sum of Expression
+    | Min of Expression
     static member (+) (x, y) =  BinaryNode(Addition, x, y)
     static member (-) (x, y) =  BinaryNode(Substraction, x, y)
     static member (*) (x, y) =  BinaryNode(Product, x, y)
@@ -38,12 +42,17 @@ type Expression =
         match x with
         | Var id -> id.ToString()
         | Const c -> sprintf "%M" c
-        | BinaryNode(op, e1, e2) -> sprintf "(%O %O %O)" e1 op e2
+        | BinaryNode(op, e1, e2) -> sprintf (new PrintfFormat<_,_,_,_>(op.FormatString)) e1  e2
         | Sum(e) -> sprintf "Sum(%O)" e
+        | Min(e) -> sprintf "Min(%O)" e
 
-type Equality = Equality of Expression * Expression with
+type Equality = Equality of Expression * Expression with 
     static member Map f e = match e with | Equality(e1, e2) -> Equality(f e1, f e2)
     override e.ToString() = match e with | Equality(e1, e2) -> sprintf "%O = %O" e1 e2
+
+type Rule =
+    | Relation of Equality
+    | ForAllChildren of Rule
 
 [<AutoOpen>]
 module Notations =
@@ -56,4 +65,6 @@ module Notations =
             scope |> List.fold (fun s name -> Scoped(name, s)) (Local local)
         |> Var
 
-    let (===) expr1 expr2 = Equality(expr1, expr2)
+    let AreEqual = Relation << Equality
+    let (=@=) expr1 expr2 = Equality(expr1, expr2)
+    let (===) expr1 expr2 = AreEqual(expr1, expr2)

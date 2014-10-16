@@ -6,7 +6,7 @@ open FsUnit
 open FsSolver
 
 let [<Test>] ``Solving a single-step problem yields the results`` () =
-    let rules = [ LocalVar "x" === Const 1M ] |> Set.ofList
+    let rules = [ LocalVar "x" =@= Const 1M ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.solve
@@ -15,7 +15,7 @@ let [<Test>] ``Solving a single-step problem yields the results`` () =
     newBindings |> should equal (Map.ofList [ Local "x", 1M])
 
 let [<Test>] ``Solving an unsolvable problem yields no result`` () =
-    let rules = [ LocalVar "x" === LocalVar "y" ] |> Set.ofList
+    let rules = [ LocalVar "x" =@= LocalVar "y" ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.solve
@@ -26,8 +26,8 @@ let [<Test>] ``Solving an unsolvable problem yields no result`` () =
 let [<Test>] ``Solving a two-step problem yields the results`` () =
     let rules =
         [
-            LocalVar "y" === LocalVar "x" + Const 1M
-            LocalVar "z" === LocalVar "y" * Const 2M
+            LocalVar "y" =@= LocalVar "x" + Const 1M
+            LocalVar "z" =@= LocalVar "y" * Const 2M
         ] |> Set.ofList
 
     let bindings =
@@ -45,9 +45,9 @@ let [<Test>] ``Solving a two-step problem yields the results`` () =
 let [<Test>] ``Solving a three-step problem yields the results`` () =
     let rules =
         [
-            LocalVar "z" === LocalVar "w" / Const 10M
-            LocalVar "y" === LocalVar "x" + Const 1M
-            LocalVar "z" === LocalVar "y" * Const 2M
+            LocalVar "z" =@= LocalVar "w" / Const 10M
+            LocalVar "y" =@= LocalVar "x" + Const 1M
+            LocalVar "z" =@= LocalVar "y" * Const 2M
         ] |> Set.ofList
 
     let bindings =
@@ -66,9 +66,9 @@ let [<Test>] ``Solving a three-step problem yields the results`` () =
 let [<Test>] ``Solving stops when it can't solve more`` () =
     let rules =
         [
-            LocalVar "a" === LocalVar "b"
-            LocalVar "y" === LocalVar "x" + Const 1M
-            LocalVar "z" === LocalVar "y" * Const 2M
+            LocalVar "a" =@= LocalVar "b"
+            LocalVar "y" =@= LocalVar "x" + Const 1M
+            LocalVar "z" =@= LocalVar "y" * Const 2M
         ] |> Set.ofList
 
     let bindings =
@@ -78,7 +78,7 @@ let [<Test>] ``Solving stops when it can't solve more`` () =
 
     let newRules, newBindings = (rules, bindings) |> Solver.solve
 
-    newRules |> should equal (Set.ofList [LocalVar "a" === LocalVar "b"])
+    newRules |> should equal (Set.ofList [LocalVar "a" =@= LocalVar "b"])
     newBindings |> should equal (Map.ofList [Local "x", -0.5M
                                              Local "y", 0.5M
                                              Local "z", 1M])

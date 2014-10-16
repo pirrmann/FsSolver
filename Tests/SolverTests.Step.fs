@@ -6,7 +6,7 @@ open FsUnit
 open FsSolver
 
 let [<Test>] ``Pattern var x = c is promoted to a binding`` () =
-    let rules = [ LocalVar "x" === Const 1M ] |> Set.ofList
+    let rules = [ LocalVar "x" =@= Const 1M ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -15,7 +15,7 @@ let [<Test>] ``Pattern var x = c is promoted to a binding`` () =
     newBindings |> should equal (Map.ofList [ Local "x", 1M])
 
 let [<Test>] ``Pattern c = var x is promoted to a binding`` () =
-    let rules = [ Const 2M === LocalVar "y" ] |> Set.ofList
+    let rules = [ Const 2M =@= LocalVar "y" ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -24,7 +24,7 @@ let [<Test>] ``Pattern c = var x is promoted to a binding`` () =
     newBindings |> should equal (Map.ofList [ Local "y", 2M])
 
 let [<Test>] ``A constant is moved away from the variable side for addition`` () =
-    let rules = [ LocalVar("x") + Const(1M) === Const(1M) ] |> Set.ofList
+    let rules = [ LocalVar("x") + Const(1M) =@= Const(1M) ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -33,7 +33,7 @@ let [<Test>] ``A constant is moved away from the variable side for addition`` ()
     newBindings |> should equal (Map.ofList [ Local "x", 0M ])
 
 let [<Test>] ``A constant is moved away from the variable side for addition - other side`` () =
-    let rules = [ Const(1M) + LocalVar("x") === Const(1M) ] |> Set.ofList
+    let rules = [ Const(1M) + LocalVar("x") =@= Const(1M) ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -42,7 +42,7 @@ let [<Test>] ``A constant is moved away from the variable side for addition - ot
     newBindings |> should equal (Map.ofList [ Local "x", 0M ])
 
 let [<Test>] ``A constant is moved away from the variable side for substraction`` () =
-    let rules = [ LocalVar("x") - Const(1M) === Const(1M) ] |> Set.ofList
+    let rules = [ LocalVar("x") - Const(1M) =@= Const(1M) ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -51,7 +51,7 @@ let [<Test>] ``A constant is moved away from the variable side for substraction`
     newBindings |> should equal (Map.ofList [ Local "x", 2M ])
 
 let [<Test>] ``A constant is moved away from the variable side for substraction - other side`` () =
-    let rules = [ Const(1M) - LocalVar("x") === Const(1M) ] |> Set.ofList
+    let rules = [ Const(1M) - LocalVar("x") =@= Const(1M) ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -60,7 +60,7 @@ let [<Test>] ``A constant is moved away from the variable side for substraction 
     newBindings |> should equal (Map.ofList [ Local "x", 0M ])
 
 let [<Test>] ``A constant is moved away from the variable side for product`` () =
-    let rules = [ LocalVar("x") * Const(2M) === Const(1M) ] |> Set.ofList
+    let rules = [ LocalVar("x") * Const(2M) =@= Const(1M) ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -69,7 +69,7 @@ let [<Test>] ``A constant is moved away from the variable side for product`` () 
     newBindings |> should equal (Map.ofList [ Local "x", 0.5M ])
 
 let [<Test>] ``A constant is moved away from the variable side for product - other side`` () =
-    let rules = [ Const(2M) * LocalVar("x") === Const(1M) ] |> Set.ofList
+    let rules = [ Const(2M) * LocalVar("x") =@= Const(1M) ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -78,7 +78,7 @@ let [<Test>] ``A constant is moved away from the variable side for product - oth
     newBindings |> should equal (Map.ofList [ Local "x", 0.5M ])
 
 let [<Test>] ``A constant is moved away from the variable side for division`` () =
-    let rules = [ LocalVar("x") / Const(2M) === Const(1M) ] |> Set.ofList
+    let rules = [ LocalVar("x") / Const(2M) =@= Const(1M) ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -87,13 +87,13 @@ let [<Test>] ``A constant is moved away from the variable side for division`` ()
     newBindings |> should equal (Map.ofList [ Local "x", 2M ])
 
 let [<Test>] ``A division by a variable is not supported by this solver`` () =
-    let rules = [ Const(2M) / LocalVar("x") === Const(1M) ] |> Set.ofList
+    let rules = [ Const(2M) / LocalVar("x") =@= Const(1M) ] |> Set.ofList
     let bindings = Map.empty
 
     (fun () -> (rules, bindings) |> Solver.step |> ignore) |> should throw typeof<System.Exception>
 
 let [<Test>] ``A variable multiplied by zero can't be solved`` () =
-    let rules = [ LocalVar("x") * Const(0M) === Const(1M) ] |> Set.ofList
+    let rules = [ LocalVar("x") * Const(0M) =@= Const(1M) ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -102,7 +102,7 @@ let [<Test>] ``A variable multiplied by zero can't be solved`` () =
     newBindings |> should equal Map.empty
 
 let [<Test>] ``A variable divided by zero can't be solved`` () =
-    let rules = [ LocalVar("x") / Const(0M) === Const(1M) ] |> Set.ofList
+    let rules = [ LocalVar("x") / Const(0M) =@= Const(1M) ] |> Set.ofList
     let bindings = Map.empty
 
     let newRules, newBindings = (rules, bindings) |> Solver.step
@@ -113,7 +113,7 @@ let [<Test>] ``A variable divided by zero can't be solved`` () =
 let [<Test>] ``Linear relation with a single variable is solved - solve for net`` () =
     let rules =
         [
-            LocalVar("net") === LocalVar("gross") * (Const(1M) + LocalVar("execFees") / Const(10000M))
+            LocalVar("net") =@= LocalVar("gross") * (Const(1M) + LocalVar("execFees") / Const(10000M))
         ] |> Set.ofList
 
     let bindings =
@@ -132,7 +132,7 @@ let [<Test>] ``Linear relation with a single variable is solved - solve for net`
 let [<Test>] ``Linear relation with a single variable is solved - solve for gross`` () =
     let rules =
         [
-            LocalVar("net") === LocalVar("gross") * (Const(1M) + LocalVar("execFees") / Const(10000M))
+            LocalVar("net") =@= LocalVar("gross") * (Const(1M) + LocalVar("execFees") / Const(10000M))
         ] |> Set.ofList
 
     let bindings =
@@ -151,7 +151,7 @@ let [<Test>] ``Linear relation with a single variable is solved - solve for gros
 let [<Test>] ``Linear relation with a single variable is solved - solve for fees`` () =
     let rules =
         [
-            LocalVar("net") === LocalVar("gross") * (Const(1M) + LocalVar("execFees") / Const(10000M))
+            LocalVar("net") =@= LocalVar("gross") * (Const(1M) + LocalVar("execFees") / Const(10000M))
         ] |> Set.ofList
 
     let bindings =
@@ -170,8 +170,8 @@ let [<Test>] ``Linear relation with a single variable is solved - solve for fees
 let [<Test>] ``New bindings are injected in the rules in 2nd step`` () =
     let rules =
         [
-            LocalVar "y" === LocalVar "x" + Const 1M
-            LocalVar "z" === LocalVar "y" * Const 2M
+            LocalVar "y" =@= LocalVar "x" + Const 1M
+            LocalVar "z" =@= LocalVar "y" * Const 2M
         ] |> Set.ofList
 
     let bindings =
@@ -189,7 +189,7 @@ let [<Test>] ``New bindings are injected in the rules in 2nd step`` () =
 let [<Test>] ``Variables in different scopes are not mixed up`` () =
     let rules =
         [
-            LocalVar "net" === Var(Scoped("leg1", Local("net"))) + Var(Scoped("leg2", Local("net")))
+            LocalVar "net" =@= Var(Scoped("leg1", Local("net"))) + Var(Scoped("leg2", Local("net")))
         ] |> Set.ofList
 
     let bindings =

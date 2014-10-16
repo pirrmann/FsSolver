@@ -55,5 +55,5 @@ module QuotationsConverter =
 
         match ruleBody with
         | DerivedPatterns.SpecificCall <@ (=) @> (None, _, [e1; e2]) ->
-            Equality(mapExpression e1, mapExpression e2)
+            AreEqual(mapExpression e1, mapExpression e2)
         | _ -> failwith "The expression should be an equality"

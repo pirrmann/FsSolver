@@ -120,3 +120,30 @@ let [<Test>] ``Complex expression with variables and constants at every level is
                     )
             )
         ))
+
+let [<Test>] ``Concretization in rules is applied to all children`` () =
+    let rule = ForAllChildren(LocalVar "x" === Const 1M)
+    let scope = { Scope.Named "root" with Children = [Scope.Named "child1"
+                                                      Scope.Named "child2"] }
+    let concreteRule = Solver.concretizeRule scope rule |> Set.ofSeq
+
+    concreteRule |> should equal [ScopedVar ["root"; "child1"; "x"] =@= Const 1M
+                                  ScopedVar ["root"; "child2"; "x"] =@= Const 1M]
+
+let [<Test>] ``Concretization can be applied in grand-children rules`` () =
+    let rule = ForAllChildren(ForAllChildren(LocalVar "x" === Const 1M))
+    let scope = { Scope.Named "root" with
+                    Children = [{ Scope.Named "child1"
+                                    with Children = [Scope.Named "baby1"
+                                                     Scope.Named "baby2"] }
+                                { Scope.Named "child2"
+                                    with Children = [Scope.Named "baby1"
+                                                     Scope.Named "baby2"
+                                                     Scope.Named "baby3"] }] }
+    let concreteRule = Solver.concretizeRule scope rule |> Set.ofSeq
+
+    concreteRule |> should equal [ScopedVar ["root"; "child1"; "baby1"; "x"] =@= Const 1M
+                                  ScopedVar ["root"; "child1"; "baby2"; "x"] =@= Const 1M
+                                  ScopedVar ["root"; "child2"; "baby1"; "x"] =@= Const 1M
+                                  ScopedVar ["root"; "child2"; "baby2"; "x"] =@= Const 1M
+                                  ScopedVar ["root"; "child2"; "baby3"; "x"] =@= Const 1M]

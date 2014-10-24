@@ -1,4 +1,4 @@
-﻿module SolverTests.Solve
+﻿module ``Solve completely`` 
 
 open NUnit.Framework
 open FsUnit

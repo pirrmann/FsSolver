@@ -13,3 +13,5 @@ module Notations =
 
     let (=@=) expr1 expr2 = expr1, expr2
     let (===) expr1 expr2 = Rules.Equality(expr1, expr2)
+
+    let ParentVar name = Rules.OuterScopeVar(name, 1)

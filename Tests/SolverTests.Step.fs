@@ -1,4 +1,4 @@
-﻿module SolverTests.Step
+﻿module ``Solve a single step``
 
 open NUnit.Framework
 open FsUnit

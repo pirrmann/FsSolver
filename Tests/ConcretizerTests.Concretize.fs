@@ -1,4 +1,4 @@
-﻿module ConcretizerTests.Concretize
+﻿module ``Concretize nodes``
 
 open NUnit.Framework
 open FsUnit
@@ -6,7 +6,7 @@ open FsUnit
 open FsSolver
 open FsSolver.Rules
 
-let [<Test>] ``An constant expression is not changed`` () =
+let [<Test>] ``A constant expression is not changed`` () =
     let node = Const 1M
     let scope = Scope.Named "root"
     let expression = node |> Concretizer.concretize scope

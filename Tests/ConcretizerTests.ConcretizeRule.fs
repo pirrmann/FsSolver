@@ -1,4 +1,4 @@
-﻿module ConcretizerTests.ConcretizeRule
+﻿module ``Concretize rules``
 
 open NUnit.Framework
 open FsUnit
@@ -40,3 +40,12 @@ let [<Test>] ``Concretization can be applied in grand-children rules`` () =
                                               ScopedVar ["root"; "child2"; "baby1"; "x"] =@= Expression.Const 1M
                                               ScopedVar ["root"; "child2"; "baby2"; "x"] =@= Expression.Const 1M
                                               ScopedVar ["root"; "child2"; "baby3"; "x"] =@= Expression.Const 1M])
+
+let [<Test>] ``Concretization handles outer scope variales in ForAllChildren rules`` () =
+    let rule = ForAllChildren(Var "z" === Var "y" * ParentVar "x")
+    let scope = { Scope.Named "root" with Children = [Scope.Named "child1"
+                                                      Scope.Named "child2"] }
+    let concreteRule = Concretizer.concretizeRule scope rule |> Set.ofSeq
+
+    concreteRule |> should equal (Set.ofList [ScopedVar ["root"; "child1"; "z"] =@= ScopedVar ["root"; "child1"; "y"] * ScopedVar ["root"; "x"]
+                                              ScopedVar ["root"; "child2"; "z"] =@= ScopedVar ["root"; "child2"; "y"] * ScopedVar ["root"; "x"]])

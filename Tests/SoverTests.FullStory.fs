@@ -4,12 +4,13 @@ open NUnit.Framework
 open FsUnit
 
 open FsSolver
+open FsSolver.Rules
 
 let [<Test>] ``Weighted delta full story`` () =
     let rules =
         [
-            ForAllChildren(LocalVar "baseSize" === Min(LocalVar "size"))
-            ForAllChildren(LocalVar "weightedDelta" * LocalVar "baseSize" === Sum(LocalVar "delta" * LocalVar "size"))
+            ForAllChildren(Var "baseSize" === Min(Var "size"))
+            ForAllChildren(Var "weightedDelta" * Var "baseSize" === Sum(Var "delta" * Var "size"))
         ]
 
     let scope =
@@ -22,7 +23,7 @@ let [<Test>] ``Weighted delta full story`` () =
             ]
         }
 
-    let concreteRules = rules |> Seq.collect (Solver.concretizeRule scope) |> Set.ofSeq
+    let concreteRules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
 
     let bindings =
         [

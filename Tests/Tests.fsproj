@@ -50,9 +50,9 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="QuotationsConverterTests.fs" />
-    <Compile Include="SolverTests.Concretize.fs" />
     <Compile Include="SolverTests.Step.fs" />
     <Compile Include="SolverTests.Solve.fs" />
+    <Compile Include="SolverTests.Concretize.fs" />
     <Compile Include="SoverTests.FullStory.fs" />
     <Content Include="packages.config" />
     <Content Include="app.config" />

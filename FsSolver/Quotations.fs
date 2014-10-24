@@ -26,7 +26,8 @@ module QuotationsConverter =
 
         fun (expr:Expr) ->
             match expr with
-            | Patterns.Call(None, makeDecimalInfo, valuesExpressions) ->
+            | Patterns.Call(None, mi, valuesExpressions)
+                when mi.MetadataToken = makeDecimalInfo.MetadataToken ->
                 let intValues =
                     valuesExpressions
                     |> Seq.map (function
@@ -36,24 +37,24 @@ module QuotationsConverter =
                 Some(makeDecimalInfo.Invoke(null, intValues) :?> decimal)
             | _ -> None
 
-    let ToEquality ruleAsExpression =
+    let ToSidesOfEquality ruleAsExpression =
         let ruleBody = ruleAsExpression |> skipParameters
 
         let rec mapExpression expr =
             match expr with
             | DerivedPatterns.SpecificCall <@ (+) @> (None, _, [e1; e2]) ->
-                BinaryNode(Addition, mapExpression e1, mapExpression e2)
+                Expression.BinaryNode(Addition, mapExpression e1, mapExpression e2)
             | DerivedPatterns.SpecificCall <@ (-) @> (None, _, [e1; e2]) ->
-                BinaryNode(Substraction, mapExpression e1, mapExpression e2)
+                Expression.BinaryNode(Substraction, mapExpression e1, mapExpression e2)
             | DerivedPatterns.SpecificCall <@ (*) @> (None, _, [e1; e2]) ->
-                BinaryNode(Product, mapExpression e1, mapExpression e2)
+                Expression.BinaryNode(Product, mapExpression e1, mapExpression e2)
             | DerivedPatterns.SpecificCall <@ (/) @> (None, _, [e1; e2]) ->
-                BinaryNode(Division, mapExpression e1, mapExpression e2)
+                Expression.BinaryNode(Division, mapExpression e1, mapExpression e2)
             | Patterns.Var v -> LocalVar (v.ToString())
-            | Decimal d -> Const(d)
+            | Decimal d -> Expression.Const(d)
             | _ -> failwith "Not supported pattern"
 
         match ruleBody with
         | DerivedPatterns.SpecificCall <@ (=) @> (None, _, [e1; e2]) ->
-            AreEqual(mapExpression e1, mapExpression e2)
+            (mapExpression e1, mapExpression e2)
         | _ -> failwith "The expression should be an equality"

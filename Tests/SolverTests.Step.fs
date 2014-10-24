@@ -5,6 +5,9 @@ open FsUnit
 
 open FsSolver
 
+let Const = Expression.Const
+let Var = Expression.Var
+
 let [<Test>] ``Pattern var x = c is promoted to a binding`` () =
     let rules = [ LocalVar "x" =@= Const 1M ] |> Set.ofList
     let bindings = Map.empty

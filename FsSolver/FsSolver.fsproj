@@ -52,9 +52,12 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="FsSolver.Expressions.fs" />
-    <Compile Include="FsSolver.Quotations.fs" />
-    <Compile Include="FsSolver.Solver.fs" />
+    <Compile Include="Expressions.fs" />
+    <Compile Include="Rules.fs" />
+    <Compile Include="Notations.fs" />
+    <Compile Include="Quotations.fs" />
+    <Compile Include="Solver.fs" />
+    <Compile Include="Concretizer.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

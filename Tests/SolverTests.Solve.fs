@@ -5,6 +5,8 @@ open FsUnit
 
 open FsSolver
 
+let Const = Expression.Const
+
 let [<Test>] ``Solving a single-step problem yields the results`` () =
     let rules = [ LocalVar "x" =@= Const 1M ] |> Set.ofList
     let bindings = Map.empty

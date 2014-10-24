@@ -1,4 +1,4 @@
-﻿module QuotationsConverterTests
+﻿module QuotationsConverterTests.Quotations
 
 open NUnit.Framework
 open FsUnit

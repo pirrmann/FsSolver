@@ -31,7 +31,7 @@ type Variable =
 [<RequireQualifiedAccess>]
 type Expression =
     | Var of Variable
-    | Const of decimal
+    | Value of decimal * ValueSource
     | BinaryNode of Operator * Expression * Expression
     static member (+) (x, y) =  BinaryNode(Addition, x, y)
     static member (-) (x, y) =  BinaryNode(Substraction, x, y)
@@ -40,5 +40,9 @@ type Expression =
     override x.ToString() =
         match x with
         | Var id -> id.ToString()
-        | Const c -> sprintf "%M" c
+        | Value(c, Constant) -> sprintf "%M" c
+        | Value(_, Computed e) -> e.ToString()
         | BinaryNode(op, e1, e2) -> sprintf (new PrintfFormat<_,_,_,_>(op.FormatString)) e1  e2
+and ValueSource =
+    | Constant
+    | Computed of Expression

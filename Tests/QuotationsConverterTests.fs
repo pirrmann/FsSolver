@@ -5,7 +5,7 @@ open FsUnit
 
 open FsSolver
 
-let Const = Expression.Const
+let Const c = Expression.Value(c, Constant)
 
 let [<Test>] ``Basic equality is converted`` () =
     let rule = <@@ fun x -> x = 1M @@>

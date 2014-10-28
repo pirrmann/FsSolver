@@ -51,7 +51,7 @@ module QuotationsConverter =
             | DerivedPatterns.SpecificCall <@ (/) @> (None, _, [e1; e2]) ->
                 Expression.BinaryNode(Division, mapExpression e1, mapExpression e2)
             | Patterns.Var v -> LocalVar (v.ToString())
-            | Decimal d -> Expression.Const(d)
+            | Decimal d -> Expression.Value(d, Constant)
             | _ -> failwith "Not supported pattern"
 
         match ruleBody with

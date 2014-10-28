@@ -6,33 +6,35 @@ open FsUnit
 open FsSolver
 open FsSolver.Rules
 
+let ConstValue c = Expression.Value(c, Constant)
+
 let [<Test>] ``A constant expression is not changed`` () =
     let node = Const 1M
     let scope = Scope.Named "root"
     let expression = node |> Concretizer.concretize scope
 
-    expression |> should equal (Expression.Const 1M)
+    expression |> should equal (ConstValue 1M)
 
 let [<Test>] ``An expression without any Sum nor variable is not changed`` () =
     let node = Const 1M + Const 2M
     let scope = Scope.Named "root"
     let expression = node |> Concretizer.concretize scope
 
-    expression |> should equal (Expression.Const 1M + Expression.Const 2M)
+    expression |> should equal (ConstValue 1M + ConstValue 2M)
 
 let [<Test>] ``Variables in an expression are scoped`` () =
     let node = (Var "x" / Const 3M +  Const 2M * Var "y") + Var "z"
     let scope = Scope.Named "root"
     let expression = node |> Concretizer.concretize scope
 
-    expression |> should equal (ScopedVar ["root"; "x"] / Expression.Const 3M +  Expression.Const 2M * ScopedVar ["root"; "y"] + ScopedVar ["root"; "z"])
+    expression |> should equal (ScopedVar ["root"; "x"] / ConstValue 3M +  ConstValue 2M * ScopedVar ["root"; "y"] + ScopedVar ["root"; "z"])
 
 let [<Test>] ``Sum is replaced by its concrete value for a single child`` () =
     let node = Sum (Const 1M)
     let scope = { Scope.Named "root" with Children = [Scope.Named "child"] }
     let expression = node |> Concretizer.concretize scope
 
-    expression |> should equal (Expression.Const 1M)
+    expression |> should equal (ConstValue 1M)
 
 let [<Test>] ``Sum is replaced by its concrete value for several children`` () =
     let node = Sum (Const 1M)
@@ -41,7 +43,7 @@ let [<Test>] ``Sum is replaced by its concrete value for several children`` () =
                                                       Scope.Named "child3"] }
     let expression = node |> Concretizer.concretize scope
 
-    expression |> should equal (Expression.Const 1M + Expression.Const 1M + Expression.Const 1M)
+    expression |> should equal (ConstValue 1M + ConstValue 1M + ConstValue 1M)
 
 let [<Test>] ``Children variables are scoped in the conrete sum (single leg)`` () =
     let node = Sum (Var "x")
@@ -66,8 +68,8 @@ let [<Test>] ``Children variables are scoped in the concrete sum for composite e
     let expression = node |> Concretizer.concretize scope
 
     expression |> should equal (
-        (Expression.Const 1M + (ScopedVar ["root"; "child1"; "x"] * (ScopedVar ["root"; "child1"; "y"] / Expression.Const 2M))) +
-        (Expression.Const 1M + (ScopedVar ["root"; "child2"; "x"] * (ScopedVar ["root"; "child2"; "y"] / Expression.Const 2M))))
+        (ConstValue 1M + (ScopedVar ["root"; "child1"; "x"] * (ScopedVar ["root"; "child1"; "y"] / ConstValue 2M))) +
+        (ConstValue 1M + (ScopedVar ["root"; "child2"; "x"] * (ScopedVar ["root"; "child2"; "y"] / ConstValue 2M))))
 
 let [<Test>] ``Grand-children variables are scoped in the concrete sum`` () =
     let node = Sum(Sum(Var "x"))
@@ -108,23 +110,23 @@ let [<Test>] ``Complex expression with variables and constants at every level is
     let expression = node |> Concretizer.concretize scope
 
     expression |> should equal (
-        ScopedVar ["root"; "x"] * Expression.Const 4M +
+        ScopedVar ["root"; "x"] * ConstValue 4M +
         (
             (
-                ScopedVar ["root"; "child1"; "x"] * Expression.Const 2M + Expression.Const 3M -
-                Expression.Const 0.5M *
+                ScopedVar ["root"; "child1"; "x"] * ConstValue 2M + ConstValue 3M -
+                ConstValue 0.5M *
                     (
-                        (ScopedVar ["root"; "child1"; "baby1"; "x"] / Expression.Const 100M - Expression.Const 1M) +
-                        (ScopedVar ["root"; "child1"; "baby2"; "x"] / Expression.Const 100M - Expression.Const 1M)
+                        (ScopedVar ["root"; "child1"; "baby1"; "x"] / ConstValue 100M - ConstValue 1M) +
+                        (ScopedVar ["root"; "child1"; "baby2"; "x"] / ConstValue 100M - ConstValue 1M)
                     )
             ) +
             (
-                ScopedVar ["root"; "child2"; "x"] * Expression.Const 2M + Expression.Const 3M -
-                Expression.Const 0.5M *
+                ScopedVar ["root"; "child2"; "x"] * ConstValue 2M + ConstValue 3M -
+                ConstValue 0.5M *
                     (
-                        (ScopedVar ["root"; "child2"; "baby1"; "x"] / Expression.Const 100M - Expression.Const 1M) +
-                        (ScopedVar ["root"; "child2"; "baby2"; "x"] / Expression.Const 100M - Expression.Const 1M) +
-                        (ScopedVar ["root"; "child2"; "baby3"; "x"] / Expression.Const 100M - Expression.Const 1M)
+                        (ScopedVar ["root"; "child2"; "baby1"; "x"] / ConstValue 100M - ConstValue 1M) +
+                        (ScopedVar ["root"; "child2"; "baby2"; "x"] / ConstValue 100M - ConstValue 1M) +
+                        (ScopedVar ["root"; "child2"; "baby3"; "x"] / ConstValue 100M - ConstValue 1M)
                     )
             )
         ))

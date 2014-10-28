@@ -6,18 +6,19 @@ module Solver =
         match expression with
         | Expression.Var(id) as v ->
             match Map.tryFind id values with
-            | Some(value) -> Expression.Const(value)
+            | Some(value) -> Expression.Value(value, Computed v)
             | None -> v
-        | Expression.Const(value) as c -> c
         | Expression.BinaryNode(op, e1, e2) ->
             Expression.BinaryNode(op, replaceValues values e1, replaceValues values e2)
+        | Expression.Value(_, _) -> expression
 
     let rec private simplify expression =
         match expression with
         | Expression.BinaryNode(op, e1, e2) ->
             let se1, se2 = simplify e1, simplify e2
             match se1, se2 with
-            | Expression.Const(c1), Expression.Const(c2) -> Expression.Const(op.ToOperator c1 c2)
+            | Expression.Value(v1, _), Expression.Value(v2, _) ->
+                Expression.Value(op.ToOperator v1 v2, Computed expression)
             | _ -> Expression.BinaryNode(op, se1, se2)
         | _ -> expression
 
@@ -32,32 +33,32 @@ module Solver =
     let hasVariable = getVariablesIds >> Seq.isEmpty >> not
 
     let rec private isolateSingleVariable eq =
-        let varSide, c =
+        let varSide, v, valueSource =
             match eq with 
-            | e, Expression.Const c
-            | Expression.Const c, e -> e, c
-            | _ -> failwith "There should be a constant on one side"
+            | e, Expression.Value(v, s)
+            | Expression.Value(v, s), e -> e, v, s
+            | _ -> failwith "There should be a value on one side"
 
         match varSide with
-        | Expression.Var id -> Some(id, c)
+        | Expression.Var id -> Some(id, v)
         | Expression.BinaryNode(op, n1, n2) ->
             let newEquality =
                 match n1, n2 with
-                | _, Expression.Const c2 ->
+                | _, Expression.Value(v2, _) ->
                     match op with
-                    | Addition -> Some(n1, Expression.Const (c - c2))
-                    | Substraction -> Some(n1, Expression.Const (c + c2))
-                    | Product -> if c2 <> 0M then Some(n1, Expression.Const (c / c2)) else None
-                    | Division -> if c2 <> 0M then Some(n1, Expression.Const (c * c2)) else None
+                    | Addition -> Some(n1, Expression.Value(v - v2, Constant))
+                    | Substraction -> Some(n1, Expression.Value (v + v2, Constant))
+                    | Product -> if v2 <> 0M then Some(n1, Expression.Value(v / v2, Constant)) else None
+                    | Division -> if v2 <> 0M then Some(n1, Expression.Value(v * v2, Constant)) else None
                     | IfLowerThan -> None
-                | Expression.Const c2, _ ->
+                | Expression.Value(v2, _), _ ->
                     match op with
-                    | Addition -> Some(n2, Expression.Const (c - c2))
-                    | Substraction -> Some(n2, Expression.Const (c2 - c))
-                    | Product -> if c2 <> 0M then Some(n2, Expression.Const (c / c2)) else None
+                    | Addition -> Some(n2, Expression.Value(v - v2, Constant))
+                    | Substraction -> Some(n2, Expression.Value(v2 - v, Constant))
+                    | Product -> if v2 <> 0M then Some(n2, Expression.Value(v / v2, Constant)) else None
                     | Division -> failwith "The variable must be in the numerator"
                     | IfLowerThan -> None
-                | _ -> failwith "There should be a constant on one side"
+                | _ -> failwith "There should be a value on one side"
             newEquality |> Option.bind isolateSingleVariable
         | _ -> None
     

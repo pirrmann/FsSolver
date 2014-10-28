@@ -34,7 +34,7 @@ module Concretizer =
         let rec toExpression node =
             match node with
             | BinaryNode(op, n1, n2) -> Expression.BinaryNode(op, n1 |> toExpression, n2 |> toExpression)
-            | Const c -> Expression.Const c
+            | Const c -> Expression.Value(c, Constant)
             | Var name -> LocalVar name
             | InnerScopeVar(name, scope) -> ScopedVar (scope @ [name])
             | OuterScopeVar(_, _)

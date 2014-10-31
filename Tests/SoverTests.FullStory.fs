@@ -6,6 +6,9 @@ open FsUnit
 open FsSolver
 open FsSolver.Rules
 
+let ConstValue c = Expression.Value(Constant c)
+let ComputedValue = Computed >> Expression.Value
+
 let [<Test>] ``Weighted delta`` () =
     let rules =
         [
@@ -27,10 +30,10 @@ let [<Test>] ``Weighted delta`` () =
 
     let bindings =
         [
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), 10.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), -12.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant -12.0M
         ] |> Map.ofList
 
     let newRules, newBindings = (concreteRules, bindings) |> Solver.solve
@@ -38,12 +41,12 @@ let [<Test>] ``Weighted delta`` () =
     newRules |> should equal Set.empty
     newBindings |> should equal
         (Map.ofList [
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), 10.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), -12.0M
-            Scoped("rfq", Scoped("underlying", Local "baseSize")), 100.0M
-            Scoped("rfq", Scoped("underlying", Local "weightedDelta")), -2.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant -12.0M
+            Scoped("rfq", Scoped("underlying", Local "baseSize")), Computed(100.0M, Expression.BinaryNode(MinOf, ComputedValue(100M, ScopedVar ["rfq"; "underlying"; "leg1"; "size"]) , ComputedValue(100M, ScopedVar ["rfq"; "underlying"; "leg2"; "size"])))
+            Scoped("rfq", Scoped("underlying", Local "weightedDelta")), Computed(-2.0M, (ComputedValue(10.0M, ScopedVar ["rfq"; "underlying"; "leg1"; "delta"]) * ComputedValue(100M, ScopedVar ["rfq"; "underlying"; "leg1"; "size"]) + ComputedValue(-12.0M, ScopedVar ["rfq"; "underlying"; "leg2"; "delta"]) * ComputedValue(100M, ScopedVar ["rfq"; "underlying"; "leg2"; "size"])) / ComputedValue(100M, ScopedVar ["rfq"; "underlying"; "baseSize"])) 
         ])
 
 let [<Test>] ``Exec fees`` () =
@@ -67,9 +70,9 @@ let [<Test>] ``Exec fees`` () =
 
     let bindings =
         [
-            Scoped("rfq", Local "feesPerLot"), 1.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), 100.0M
+            Scoped("rfq", Local "feesPerLot"), Constant 1.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
         ] |> Map.ofList
 
     let newRules, newBindings = (concreteRules, bindings) |> Solver.solve
@@ -77,9 +80,9 @@ let [<Test>] ``Exec fees`` () =
     newRules |> should equal Set.empty
     newBindings |> should equal
         (Map.ofList [
-            Scoped("rfq", Local "feesPerLot"), 1.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), 100.0M
-            Scoped("rfq", Scoped("underlying", Local "execFees")), 200.0M
-            Scoped("rfq", Local "totalExecFees"), 200.0M
+            Scoped("rfq", Local "feesPerLot"), Constant 1.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
+            Scoped("rfq", Scoped("underlying", Local "execFees")), Computed(200.0M, (ComputedValue(100.0M, ScopedVar ["rfq"; "underlying"; "leg1"; "size"]) + ComputedValue(100.0M, ScopedVar ["rfq"; "underlying"; "leg2"; "size"])) * ComputedValue(1.0M, ScopedVar ["rfq"; "feesPerLot"]))
+            Scoped("rfq", Local "totalExecFees"), Computed(200.0M, ComputedValue(200.0M, ScopedVar ["rfq"; "underlying"; "execFees"]))
         ])

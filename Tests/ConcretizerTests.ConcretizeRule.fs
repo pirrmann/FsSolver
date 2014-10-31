@@ -6,7 +6,7 @@ open FsUnit
 open FsSolver
 open FsSolver.Rules
 
-let ConstValue c = Expression.Value(c, Constant)
+let ConstValue c = Expression.Value(Constant c)
 
 let [<Test>] ``Concretization of an equality concretizes both nodes`` () =
     let rule = Var "x" === Const 1M

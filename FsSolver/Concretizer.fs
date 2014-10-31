@@ -23,7 +23,7 @@ module Concretizer =
                 | Min e ->
                     scope.Children
                     |> Seq.map (fun s -> flatten true s e)
-                    |> Seq.reduce (fun x y -> BinaryNode(IfLowerThan, x, y))
+                    |> Seq.reduce (fun x y -> BinaryNode(MinOf, x, y))
                 | BinaryNode(op, n1, n2) -> BinaryNode(op, flatten false scope n1, flatten false scope n2)
                 | _ -> node
 
@@ -34,7 +34,7 @@ module Concretizer =
         let rec toExpression node =
             match node with
             | BinaryNode(op, n1, n2) -> Expression.BinaryNode(op, n1 |> toExpression, n2 |> toExpression)
-            | Const c -> Expression.Value(c, Constant)
+            | Const c -> Expression.Value(Constant c)
             | Var name -> LocalVar name
             | InnerScopeVar(name, scope) -> ScopedVar (scope @ [name])
             | OuterScopeVar(_, _)

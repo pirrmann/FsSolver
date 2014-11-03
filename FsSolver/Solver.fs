@@ -1,5 +1,9 @@
 ﻿namespace FsSolver
 
+type Problem = {
+    Rules: Set<Expression * Expression>
+    Bindings: Map<Variable, Value> }
+
 module Solver =
 
     let rec private replaceValues values expression =
@@ -78,10 +82,10 @@ module Solver =
             then isolateSingleVariable eq
             else None
 
-    let step (rules, bindings) =
+    let step problem =
         // inject the bound values in variables and simplify
-        let injectAndSimplify = (replaceValues bindings) >> simplify
-        let simplifiedRules = rules |> Set.map (fun (x, y) -> injectAndSimplify x, injectAndSimplify y)
+        let injectAndSimplify = (replaceValues problem.Bindings) >> simplify
+        let simplifiedRules = problem.Rules |> Set.map (fun (x, y) -> injectAndSimplify x, injectAndSimplify y)
 
         // try to infer new bindings
         let newBindings =
@@ -97,12 +101,15 @@ module Solver =
         let allBindings =
             newBindings
             |> Seq.map snd
-            |> Seq.fold (fun d (id, value) -> Map.add id value d) bindings
+            |> Seq.fold (fun d (id, value) -> Map.add id value d) problem.Bindings
     
-        (remainingRules, allBindings)
+        {
+            Rules = remainingRules
+            Bindings = allBindings
+        }
 
-    let rec solve (rules, bindings) =
-        let newRules, newBindings = step (rules, bindings)
-        if (newRules, newBindings) = (rules, bindings)
-            then (newRules, newBindings)
-            else solve (newRules, newBindings)
+    let rec solve problem =
+        let newProblem = step problem
+        if newProblem = problem
+            then newProblem
+            else solve newProblem

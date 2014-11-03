@@ -26,20 +26,21 @@ let [<Test>] ``Weighted delta`` () =
             ]
         }
 
-    let concreteRules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
-
-    let bindings =
+    let problem = {
+        Rules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
+        Bindings =
         [
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant -12.0M
-        ] |> Map.ofList
+        ] |> Map.ofList }
 
-    let newRules, newBindings = (concreteRules, bindings) |> Solver.solve
+    let newProblem = problem |> Solver.solve
 
-    newRules |> should equal Set.empty
-    newBindings |> should equal
+    newProblem.Rules |> should equal Set.empty
+    newProblem.Bindings
+        |> should equal
         (Map.ofList [
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
@@ -66,19 +67,20 @@ let [<Test>] ``Exec fees`` () =
             ]
         }
 
-    let concreteRules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
-
-    let bindings =
+    let problem = {
+        Rules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
+        Bindings =
         [
             Scoped("rfq", Local "feesPerLot"), Constant 1.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
-        ] |> Map.ofList
+        ] |> Map.ofList }
 
-    let newRules, newBindings = (concreteRules, bindings) |> Solver.solve
+    let newProblem = problem |> Solver.solve
 
-    newRules |> should equal Set.empty
-    newBindings |> should equal
+    newProblem.Rules |> should equal Set.empty
+    newProblem.Bindings
+        |> should equal
         (Map.ofList [
             Scoped("rfq", Local "feesPerLot"), Constant 1.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M

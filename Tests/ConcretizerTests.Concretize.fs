@@ -6,8 +6,6 @@ open FsUnit
 open FsSolver
 open FsSolver.Rules
 
-let ConstValue c = Expression.Value(Constant c)
-
 let [<Test>] ``A constant expression is not changed`` () =
     let node = Const 1M
     let scope = Scope.Named "root"

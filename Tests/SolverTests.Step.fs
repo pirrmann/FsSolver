@@ -5,8 +5,6 @@ open FsUnit
 
 open FsSolver
 
-let ConstValue = Constant >> Expression.Value
-let ComputedValue = Computed >> Expression.Value
 let Var = Expression.Var
 
 let [<Test>] ``Pattern var x = c is promoted to a binding`` () =

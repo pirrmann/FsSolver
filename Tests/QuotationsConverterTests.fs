@@ -5,8 +5,6 @@ open FsUnit
 
 open FsSolver
 
-let ConstValue c = Expression.Value(Constant c)
-
 let [<Test>] ``Basic equality is converted`` () =
     let rule = <@@ fun x -> x = 1M @@>
     let converted = rule |> QuotationsConverter.ToSidesOfEquality

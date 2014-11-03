@@ -11,6 +11,9 @@ module Notations =
             scope |> List.fold (fun s name -> Scoped(name, s)) (Local local)
         |> Expression.Var
 
+    let ConstValue c = Expression.Value(Constant c)
+    let ComputedValue = Computed >> Expression.Value
+
     let (=@=) expr1 expr2 = expr1, expr2
     let (===) expr1 expr2 = Rules.Equality(expr1, expr2)
 

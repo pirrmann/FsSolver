@@ -6,9 +6,6 @@ open FsUnit
 open FsSolver
 open FsSolver.Rules
 
-let ConstValue c = Expression.Value(Constant c)
-let ComputedValue = Computed >> Expression.Value
-
 let [<Test>] ``Weighted delta`` () =
     let rules =
         [

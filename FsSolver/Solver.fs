@@ -34,7 +34,62 @@ module Solver =
         | Expression.Var id -> yield id
         | _ -> () }
 
-    let hasVariable = getVariablesIds >> Seq.isEmpty >> not
+    let private hasVariable = getVariablesIds >> Seq.isEmpty >> not
+
+    let rec private getVariablesInComputedValues expression = seq {
+        match expression with
+        | Expression.BinaryNode(_, e1, e2) ->
+            yield! getVariablesInComputedValues e1
+            yield! getVariablesInComputedValues e2
+        | Expression.Value(Computed(_, e)) ->
+            yield! getVariablesInComputedValues e
+        | Expression.Var id -> yield id
+        | _ -> () }
+
+    let rec private getExistingBindings expression = seq {
+        match expression with
+        | Expression.BinaryNode(_, e1, e2) ->
+            yield! getExistingBindings e1
+            yield! getExistingBindings e2
+        | Expression.Value(Computed(_, Expression.Var v) as c) -> yield v, c
+        | Expression.Value(Computed(_, e)) ->
+            yield! getExistingBindings e
+        | _ -> () }
+
+    let private getAllIncoherences e incoherency =
+        getVariablesInComputedValues e
+        |> Seq.map (fun id -> id, Incoherent(e, incoherency))
+
+    let private checkIncoherencies eq = seq {
+        match eq with
+        | Expression.Value v1, Expression.Value v2 ->
+            match v1, v2 with
+            | Incoherent(_, _), Incoherent(_, _) -> ()
+            | Incoherent(e, _), varContainer
+            | varContainer, Incoherent(e, _) ->
+                match varContainer with
+                | Constant _ -> ()
+                | Computed(_, e) -> yield! getAllIncoherences e Propagated
+                | Incoherent(_, _) -> failwith "Incoherences should be matched before this case"
+            | Constant(c), Computed(d, e)
+            | Computed(d, e), Constant(c) ->
+                let cv = ComputedValue(d, e)
+                if d <> c then
+                    yield! getAllIncoherences cv (Conflict([cv; ConstValue c]))
+                else
+                    yield! getExistingBindings cv
+            | Computed(d1, e1), Computed(d2, e2) ->
+                let cv1 = ComputedValue(d1, e1)
+                let cv2 = ComputedValue(d2, e2)
+                if d1 <> d2 then
+                    let conflict = Conflict [cv1; cv2]
+                    yield! getAllIncoherences cv1 conflict
+                    yield! getAllIncoherences cv2 conflict
+                else
+                    yield! getExistingBindings cv1
+                    yield! getExistingBindings cv2
+            | Constant _, Constant _ -> invalidArg "eq" "This rule either always true or always false, therefore useless"
+        | _ -> invalidArg "eq" "The equality should contain values on both sides" }
 
     let rec private isolateSingleVariable eq =
         let varSide, v =
@@ -46,8 +101,10 @@ module Solver =
         match varSide with
         | Expression.Var id ->
             match v with
-            | Computed(value, Expression.Var _) as identifiedVar -> Some(id, Computed(value, Expression.Value identifiedVar))
-            | _ -> Some(id, v)
+            | Computed(value, Expression.Var _) as identifiedVar ->
+                Seq.singleton (id, Computed(value, Expression.Value identifiedVar))
+            | _ ->
+                Seq.singleton (id, v)
 
         | Expression.BinaryNode(op, n1, n2) ->
             let newEquality =
@@ -67,8 +124,11 @@ module Solver =
                     | Division -> failwith "The variable must be in the numerator"
                     | MinOf -> None
                 | _ -> failwith "There should be a value on one side"
-            newEquality |> Option.bind isolateSingleVariable
-        | _ -> None
+
+            match newEquality with
+            | Some eq -> isolateSingleVariable eq
+            | None -> Seq.empty
+        | _ -> Seq.empty
     
     let private tryIsolateVariable = function
         | (e1, e2) as eq ->
@@ -78,9 +138,10 @@ module Solver =
                     yield! getVariablesIds e2
                 } |> Seq.toList
 
-            if allVariablesIds.Length = 1
-            then isolateSingleVariable eq
-            else None
+            match allVariablesIds.Length with
+            | 0 -> checkIncoherencies eq
+            | 1 -> isolateSingleVariable eq
+            | _ -> Seq.empty
 
     let step problem =
         // inject the bound values in variables and simplify
@@ -90,18 +151,42 @@ module Solver =
         // try to infer new bindings
         let newBindings =
             simplifiedRules
-            |> Seq.choose (fun eq -> tryIsolateVariable eq |> Option.map (fun c -> eq, c))
+            |> Seq.collect (fun eq -> tryIsolateVariable eq |> Seq.map (fun c -> eq, c))
             |> Seq.toList
 
         // remove the rules where there is nothing more to solve
         let remainingRules =
             simplifiedRules - (newBindings |> Seq.map fst |> Set.ofSeq)
+        
+        // remove the useless bindings that were just needed to get rid of the rules (to be refactored)
+        let useFullNewBindings =
+            newBindings
+            |> Seq.filter (function | _, (v, Computed(_, Expression.Var v')) when v = v' -> false | _ -> true)
+
+        let unifyValues id values =
+            match values |> Seq.tryPick (fun v -> match v with | Incoherent(_, _) as i -> Some(i) | _ -> None) with
+            | Some i -> id, i
+            | None ->
+                match values |> Seq.distinctBy (fun v -> v.Evaluated) |> Seq.toList with
+                | [v] -> id, v
+                | _ -> id, Incoherent(
+                                Expression.Var id,
+                                values
+                                    |> Seq.map (fun v -> v.Expression)
+                                    |> Seq.toList
+                                    |> Conflict)
+
+        let unifiedNewBindings =
+            useFullNewBindings
+            |> Seq.map snd
+            |> Seq.groupBy fst
+            |> Seq.map (fun (id, values) -> unifyValues id (values |> Seq.map snd))
 
         // add the newly discovered bindings to the map of bindings
+        let addBinding bindings (id, value) = bindings |> Map.add id value 
         let allBindings =
-            newBindings
-            |> Seq.map snd
-            |> Seq.fold (fun d (id, value) -> Map.add id value d) problem.Bindings
+            unifiedNewBindings
+            |> Seq.fold addBinding problem.Bindings
     
         {
             Rules = remainingRules

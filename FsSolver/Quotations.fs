@@ -12,30 +12,25 @@ module QuotationsConverter =
             lambdaBody |> skipParameters
         | _ -> expr
 
-    let private (|Decimal|_|) =
+    let private new_decimal_info =
         let fsharpCore = System.Reflection.Assembly.GetAssembly(typeof<Microsoft.FSharp.Core.Option<string>>)
 
         let languagePrimitivesIntrinsicFunctions =
             fsharpCore.DefinedTypes
             |> Seq.find (fun fi -> fi.Name = "IntrinsicFunctions")
 
-        let makeDecimalInfo =
-            languagePrimitivesIntrinsicFunctions.GetMethod("MakeDecimal",
-                                         System.Reflection.BindingFlags.Static
-                                         ||| System.Reflection.BindingFlags.Public)
+        languagePrimitivesIntrinsicFunctions.GetMethod("MakeDecimal",
+                                        System.Reflection.BindingFlags.Static
+                                        ||| System.Reflection.BindingFlags.Public)
 
-        fun (expr:Expr) ->
-            match expr with
-            | Patterns.Call(None, mi, valuesExpressions)
-                when mi.MetadataToken = makeDecimalInfo.MetadataToken ->
-                let intValues =
-                    valuesExpressions
-                    |> Seq.map (function
-                                | Patterns.Value (v, _) -> v
-                                | _ -> failwith "Something is going really bad")
-                    |> Seq.toArray
-                Some(makeDecimalInfo.Invoke(null, intValues) :?> decimal)
-            | _ -> None
+    open Microsoft.FSharp.Quotations.Patterns
+    open Microsoft.FSharp.Quotations.DerivedPatterns
+    let private (|Decimal|_|) = function
+        | Call (None, mi, [Int32 low; Int32 medium; Int32 high; Bool isNegative; Byte scale])
+          when mi.Name = new_decimal_info.Name
+               && mi.DeclaringType.FullName = new_decimal_info.DeclaringType.FullName ->
+            Some (new_decimal_info.Invoke(null, [|low :> obj; medium :> obj; high :> obj; isNegative :> obj; scale :> obj|]) :?> decimal)
+        | _ -> None
 
     let ToSidesOfEquality ruleAsExpression =
         let ruleBody = ruleAsExpression |> skipParameters

@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsSolver", "FsSolver\FsSolver.fsproj", "{E1948AD3-9E85-4F65-A7AD-8080962C037E}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tests", "Tests\Tests.fsproj", "{F708E6A1-B79A-4B38-BA99-8C21CA6219FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharpTests", "CSharpTests\CSharpTests.csproj", "{9169DBDC-54A3-4E7B-A11B-634120E6CDD0}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "CSharpTestsRules", "CSharpTestsRules\CSharpTestsRules.fsproj", "{71CA9E9A-0E4E-4375-AEB5-C135B6DB0179}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{F708E6A1-B79A-4B38-BA99-8C21CA6219FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F708E6A1-B79A-4B38-BA99-8C21CA6219FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F708E6A1-B79A-4B38-BA99-8C21CA6219FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9169DBDC-54A3-4E7B-A11B-634120E6CDD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9169DBDC-54A3-4E7B-A11B-634120E6CDD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9169DBDC-54A3-4E7B-A11B-634120E6CDD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9169DBDC-54A3-4E7B-A11B-634120E6CDD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71CA9E9A-0E4E-4375-AEB5-C135B6DB0179}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71CA9E9A-0E4E-4375-AEB5-C135B6DB0179}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71CA9E9A-0E4E-4375-AEB5-C135B6DB0179}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71CA9E9A-0E4E-4375-AEB5-C135B6DB0179}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

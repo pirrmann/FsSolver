@@ -21,13 +21,6 @@ type Operator =
         | Division -> (/)
         | MinOf -> min
 
-type Variable =
-    | Local of string
-    | Scoped of string * Variable with
-    override x.ToString() = match x with
-                            | Local name -> name
-                            | Scoped(scope, v) -> sprintf "%s_%s" scope (v.ToString())
-
 [<RequireQualifiedAccess>]
 type Expression =
     | Var of Variable

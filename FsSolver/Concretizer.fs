@@ -7,7 +7,7 @@ module Concretizer =
         let rec addScopeToVariables scope node =
             match node with
             | Var name -> InnerScopeVar(name, [scope.Name])
-            | InnerScopeVar(name, varScope) -> InnerScopeVar(name, scope.Name :: varScope)
+            | InnerScopeVar(name, varScope) -> InnerScopeVar(name, varScope @ [scope.Name])
             | OuterScopeVar(name, 1) -> Var name
             | OuterScopeVar(name, levelsUp) -> OuterScopeVar(name, levelsUp - 1)
             | BinaryNode(op, n1, n2) -> BinaryNode(op, addScopeToVariables scope n1, addScopeToVariables scope n2)
@@ -36,7 +36,7 @@ module Concretizer =
             | BinaryNode(op, n1, n2) -> Expression.BinaryNode(op, n1 |> toExpression, n2 |> toExpression)
             | Const c -> Expression.Value(Constant c)
             | Var name -> LocalVar name
-            | InnerScopeVar(name, scope) -> ScopedVar (scope @ [name])
+            | InnerScopeVar(name, scope) -> ScopedVar (name :: scope)
             | OuterScopeVar(_, _)
             | Sum _
             | Min _ -> failwith "Error"

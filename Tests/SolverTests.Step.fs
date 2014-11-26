@@ -213,4 +213,4 @@ let [<Test>] ``Variables in different scopes are not mixed up`` () =
     newProblem.Bindings
         |> should equal (Map.ofList [Local "net", Constant 2M
                                      Scoped("leg1", Local("net")), Constant 1M
-                                     Scoped("leg2", Local("net")), Computed(1M, ComputedValue(2M, LocalVar "net") - ComputedValue(1M, ScopedVar ["leg1"; "net"]))])
+                                     Scoped("leg2", Local("net")), Computed(1M, ComputedValue(2M, LocalVar "net") - ComputedValue(1M, ScopedVar ["net"; "leg1"]))])

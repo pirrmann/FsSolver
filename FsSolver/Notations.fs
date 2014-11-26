@@ -4,12 +4,13 @@
 module Notations =
     let LocalVar = Local >> Expression.Var
 
-    let ScopedVar names =
-        match List.rev names with
+    let ScopedVariable names =
+        match names with
         | [] -> failwith "Can't build a scoped variable from a empty list"
         | local :: scope ->
             scope |> List.fold (fun s name -> Scoped(name, s)) (Local local)
-        |> Expression.Var
+
+    let ScopedVar = ScopedVariable >> Expression.Var
 
     let ConstValue c = Expression.Value(Constant c)
     let ComputedValue = Computed >> Expression.Value

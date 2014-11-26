@@ -1,5 +1,7 @@
 ﻿namespace FsSolver
 
+open FsSolver.Rules
+
 type Problem = {
     Rules: Set<Expression * Expression>
     Bindings: Map<Variable, Value> }

@@ -25,7 +25,7 @@ let [<Test>] ``Variables in an expression are scoped`` () =
     let scope = Scope.Named "root"
     let expression = node |> Concretizer.concretize scope
 
-    expression |> should equal (ScopedVar ["root"; "x"] / ConstValue 3M +  ConstValue 2M * ScopedVar ["root"; "y"] + ScopedVar ["root"; "z"])
+    expression |> should equal (ScopedVar ["x"; "root"] / ConstValue 3M +  ConstValue 2M * ScopedVar ["y"; "root"] + ScopedVar ["z"; "root"])
 
 let [<Test>] ``Sum is replaced by its concrete value for a single child`` () =
     let node = Sum (Const 1M)
@@ -48,7 +48,7 @@ let [<Test>] ``Children variables are scoped in the conrete sum (single leg)`` (
     let scope = { Scope.Named "root" with Children = [Scope.Named "child"] }
     let expression = node |> Concretizer.concretize scope
 
-    expression |> should equal (ScopedVar ["root"; "child"; "x"])
+    expression |> should equal (ScopedVar ["x"; "child"; "root"])
 
 let [<Test>] ``Children variables are scoped in the concrete sum (several legs)`` () =
     let node = Sum (Var "x")
@@ -56,8 +56,8 @@ let [<Test>] ``Children variables are scoped in the concrete sum (several legs)`
                                                       Scope.Named "child2"] }
     let expression = node |> Concretizer.concretize scope
 
-    expression |> should equal (ScopedVar ["root"; "child1"; "x"] +
-                                ScopedVar ["root"; "child2"; "x"])
+    expression |> should equal (ScopedVar ["x"; "child1"; "root"] +
+                                ScopedVar ["x"; "child2"; "root"])
 
 let [<Test>] ``Children variables are scoped in the concrete sum for composite expressions`` () =
     let node = Sum (Const 1M + (Var "x" * (Var "y" / Const 2M)))
@@ -66,8 +66,8 @@ let [<Test>] ``Children variables are scoped in the concrete sum for composite e
     let expression = node |> Concretizer.concretize scope
 
     expression |> should equal (
-        (ConstValue 1M + (ScopedVar ["root"; "child1"; "x"] * (ScopedVar ["root"; "child1"; "y"] / ConstValue 2M))) +
-        (ConstValue 1M + (ScopedVar ["root"; "child2"; "x"] * (ScopedVar ["root"; "child2"; "y"] / ConstValue 2M))))
+        (ConstValue 1M + (ScopedVar ["x"; "child1"; "root"] * (ScopedVar ["y"; "child1"; "root"] / ConstValue 2M))) +
+        (ConstValue 1M + (ScopedVar ["x"; "child2"; "root"] * (ScopedVar ["y"; "child2"; "root"] / ConstValue 2M))))
 
 let [<Test>] ``Grand-children variables are scoped in the concrete sum`` () =
     let node = Sum(Sum(Var "x"))
@@ -82,8 +82,8 @@ let [<Test>] ``Grand-children variables are scoped in the concrete sum`` () =
     let expression = node |> Concretizer.concretize scope
 
     expression |> should equal (
-        (ScopedVar ["root"; "child1"; "baby1"; "x"] + ScopedVar ["root"; "child1"; "baby2"; "x"]) +
-        (ScopedVar ["root"; "child2"; "baby1"; "x"] + ScopedVar ["root"; "child2"; "baby2"; "x"] + ScopedVar ["root"; "child2"; "baby3"; "x"]))
+        (ScopedVar ["x"; "baby1"; "child1"; "root"] + ScopedVar ["x"; "baby2"; "child1"; "root"]) +
+        (ScopedVar ["x"; "baby1"; "child2"; "root"] + ScopedVar ["x"; "baby2"; "child2"; "root"] + ScopedVar ["x"; "baby3"; "child2"; "root"]))
 
 let [<Test>] ``Complex expression with variables and constants at every level is concretized`` () =
     let node =
@@ -108,23 +108,23 @@ let [<Test>] ``Complex expression with variables and constants at every level is
     let expression = node |> Concretizer.concretize scope
 
     expression |> should equal (
-        ScopedVar ["root"; "x"] * ConstValue 4M +
+        ScopedVar ["x"; "root"] * ConstValue 4M +
         (
             (
-                ScopedVar ["root"; "child1"; "x"] * ConstValue 2M + ConstValue 3M -
+                ScopedVar ["x"; "child1"; "root"] * ConstValue 2M + ConstValue 3M -
                 ConstValue 0.5M *
                     (
-                        (ScopedVar ["root"; "child1"; "baby1"; "x"] / ConstValue 100M - ConstValue 1M) +
-                        (ScopedVar ["root"; "child1"; "baby2"; "x"] / ConstValue 100M - ConstValue 1M)
+                        (ScopedVar ["x"; "baby1"; "child1"; "root"] / ConstValue 100M - ConstValue 1M) +
+                        (ScopedVar ["x"; "baby2"; "child1"; "root"] / ConstValue 100M - ConstValue 1M)
                     )
             ) +
             (
-                ScopedVar ["root"; "child2"; "x"] * ConstValue 2M + ConstValue 3M -
+                ScopedVar ["x"; "child2"; "root"] * ConstValue 2M + ConstValue 3M -
                 ConstValue 0.5M *
                     (
-                        (ScopedVar ["root"; "child2"; "baby1"; "x"] / ConstValue 100M - ConstValue 1M) +
-                        (ScopedVar ["root"; "child2"; "baby2"; "x"] / ConstValue 100M - ConstValue 1M) +
-                        (ScopedVar ["root"; "child2"; "baby3"; "x"] / ConstValue 100M - ConstValue 1M)
+                        (ScopedVar ["x"; "baby1"; "child2"; "root"] / ConstValue 100M - ConstValue 1M) +
+                        (ScopedVar ["x"; "baby2"; "child2"; "root"] / ConstValue 100M - ConstValue 1M) +
+                        (ScopedVar ["x"; "baby3"; "child2"; "root"] / ConstValue 100M - ConstValue 1M)
                     )
             )
         ))

@@ -17,7 +17,7 @@ type RuleNode =
     override x.ToString() =
         match x with
         | Var name -> name
-        | InnerScopeVar(name, scope) -> sprintf "%s_%s" (System.String.Join("_", scope)) name
+        | InnerScopeVar(name, scope) -> sprintf "%s.%s" (System.String.Join(".", scope)) name
         | OuterScopeVar(name, levelsUp) -> new System.String('^', levelsUp) + name
         | Const c -> sprintf "%M" c
         | BinaryNode(op, e1, e2) -> sprintf (new PrintfFormat<_,_,_,_>(op.FormatString)) e1  e2
@@ -28,5 +28,8 @@ type Rule =
     | Equality of RuleNode * RuleNode
     | ForAllChildren of Rule
 
-type Scope = { Name:string; Children: Scope list }
-    with static member Named name = { Name = name; Children = []}
+type Scope = { Name:string; Children: Scope list } with
+    static member Named name = { Name = name; Children = []}
+    static member Create(name, children) = {
+        Name = name;
+        Children = children |> Array.toList }

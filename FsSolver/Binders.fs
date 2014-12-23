@@ -33,13 +33,13 @@ type GetterSetter = {
     static member FromProperty (property:System.Reflection.PropertyInfo, data) =
         {
             Get = fun () ->
-                let value = property.GetMethod.Invoke(data, [||])
+                let value = property.GetGetMethod().Invoke(data, [||])
                 match value with
                 | :? System.Nullable<decimal> as d when d.HasValue -> Some d.Value
                 | :? decimal as d -> Some d
                 | _ ->  None
             Set = fun value ->
-                property.SetMethod.Invoke(data, [| value |]) |> ignore
+                property.GetSetMethod().Invoke(data, [| value |]) |> ignore
         }
 
 type Binder = Binder of variable:Variable * getterSetter:GetterSetter with

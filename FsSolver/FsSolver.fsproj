@@ -9,9 +9,10 @@
     <OutputType>Library</OutputType>
     <RootNamespace>FsSolver</RootNamespace>
     <AssemblyName>FsSolver</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
     <Name>FsSolver</Name>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -57,7 +58,6 @@
     <Compile Include="Expressions.fs" />
     <Compile Include="Rules.fs" />
     <Compile Include="Notations.fs" />
-    <Compile Include="Quotations.fs" />
     <Compile Include="Concretizer.fs" />
     <Compile Include="Solver.fs" />
     <Compile Include="BoundProblem.fs" />

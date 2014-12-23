@@ -19,7 +19,7 @@ module ReflectedBinders =
                     match seqType with
                     | Some i ->
                         yield!
-                            pi.GetMethod.Invoke(data, [||]) :?> seq<_>
+                            pi.GetGetMethod().Invoke(data, [||]) :?> seq<_>
                             |> Seq.mapi (fun i child -> getBinders (sprintf "%s%d" (typeAsScope child) (i+1)) child)
                             |> Seq.collect (Seq.map (fun (v, gs) -> (Scoped(name, v), gs)))
                     | None -> () }

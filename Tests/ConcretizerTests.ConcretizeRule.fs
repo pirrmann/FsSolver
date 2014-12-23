@@ -49,3 +49,12 @@ let [<Test>] ``Concretization handles outer scope variales in ForAllChildren rul
 
     concreteRule |> should equal (Set.ofList [ScopedVar ["z"; "child1"; "root"] =@= ScopedVar ["y"; "child1"; "root"] * ScopedVar ["x"; "root"]
                                               ScopedVar ["z"; "child2"; "root"] =@= ScopedVar ["y"; "child2"; "root"] * ScopedVar ["x"; "root"]])
+
+let [<Test>] ``Concretization of First and Last rules`` () =
+    let rule = Var "z" === First(Var "x") - Last(Var "y")
+    let scope = { Scope.Named "root" with Children = [Scope.Named "child1"
+                                                      Scope.Named "child2"] }
+    let concreteRule = Concretizer.concretizeRule scope rule |> Set.ofSeq
+
+    concreteRule |> should equal (Set.ofList [ScopedVar ["z"; "root"] =@= ScopedVar ["x"; "child1"; "root"] - ScopedVar ["y"; "child2"; "root"]])
+

@@ -6,6 +6,7 @@ type Operator =
     | Product
     | Division
     | MinOf
+    | MaxOf
     member op.FormatString =
         match op with
         | Addition -> "(%O + %O)"
@@ -13,6 +14,7 @@ type Operator =
         | Product -> "%O * %O"
         | Division -> "%O / %O"
         | MinOf -> "min(%O, %O)"
+        | MaxOf -> "max(%O, %O)"
     member op.ToOperator:(decimal->decimal->decimal) =
         match op with
         | Addition -> (+)
@@ -20,6 +22,7 @@ type Operator =
         | Product -> (*)
         | Division -> (/)
         | MinOf -> min
+        | MaxOf -> max
 
 [<RequireQualifiedAccess>]
 type Expression =

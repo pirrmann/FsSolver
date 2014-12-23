@@ -10,6 +10,9 @@ type RuleNode =
     | BinaryNode of Operator * RuleNode * RuleNode
     | Sum of RuleNode
     | Min of RuleNode
+    | Max of RuleNode
+    | First of RuleNode
+    | Last of RuleNode
     static member (+) (x, y) = BinaryNode(Addition, x, y)
     static member (-) (x, y) = BinaryNode(Substraction, x, y)
     static member (*) (x, y) = BinaryNode(Product, x, y)
@@ -23,6 +26,9 @@ type RuleNode =
         | BinaryNode(op, e1, e2) -> sprintf (new PrintfFormat<_,_,_,_>(op.FormatString)) e1  e2
         | Sum(e) -> sprintf "Sum(%O)" e
         | Min(e) -> sprintf "Min(%O)" e
+        | Max(e) -> sprintf "Max(%O)" e
+        | First(e) -> sprintf "First(%O)" e
+        | Last(e) -> sprintf "Last(%O)" e
 
 type Rule =
     | Equality of RuleNode * RuleNode

@@ -24,6 +24,16 @@ module Concretizer =
                     scope.Children
                     |> Seq.map (fun s -> flatten true s e)
                     |> Seq.reduce (fun x y -> BinaryNode(MinOf, x, y))
+                | Max e ->
+                    scope.Children
+                    |> Seq.map (fun s -> flatten true s e)
+                    |> Seq.reduce (fun x y -> BinaryNode(MaxOf, x, y))
+                | First e ->
+                    let firstScope = scope.Children |> Seq.head
+                    flatten true firstScope e
+                | Last e ->
+                    let lastScope = scope.Children |> Seq.last
+                    flatten true lastScope e
                 | BinaryNode(op, n1, n2) -> BinaryNode(op, flatten false scope n1, flatten false scope n2)
                 | _ -> node
 
@@ -39,7 +49,10 @@ module Concretizer =
             | InnerScopeVar(name, scope) -> ScopedVar (name :: scope)
             | OuterScopeVar(_, _)
             | Sum _
-            | Min _ -> failwith "Error"
+            | Min _
+            | Max _
+            | First _
+            | Last _ -> failwith "Error"
 
         node
         |> flatten true scope

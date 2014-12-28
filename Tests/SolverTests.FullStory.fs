@@ -9,7 +9,7 @@ open FsSolver.Rules
 let [<Test>] ``Weighted delta`` () =
     let rules =
         [
-            ForAllChildren(Var "baseSize" === Min(Var "size"))
+            ForAllChildren(Var "baseSize" === Min(Abs(Var "size")))
             ForAllChildren(Var "weightedDelta" * Var "baseSize" === Sum(Var "delta" * Var "size"))
         ]
 
@@ -29,8 +29,8 @@ let [<Test>] ``Weighted delta`` () =
         [
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant -12.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant -100.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant 12.0M
         ] |> Map.ofList }
 
     let newProblem = problem |> Solver.solve
@@ -41,10 +41,10 @@ let [<Test>] ``Weighted delta`` () =
         (Map.ofList [
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant -12.0M
-            Scoped("rfq", Scoped("underlying", Local "baseSize")), Computed(100.0M, Expression.BinaryNode(MinOf, ComputedValue(100M, ScopedVar ["size"; "leg1"; "underlying"; "rfq"]) , ComputedValue(100M, ScopedVar ["size"; "leg2"; "underlying"; "rfq"])))
-            Scoped("rfq", Scoped("underlying", Local "weightedDelta")), Computed(-2.0M, (ComputedValue(10.0M, ScopedVar ["delta"; "leg1"; "underlying"; "rfq"]) * ComputedValue(100M, ScopedVar ["size"; "leg1"; "underlying"; "rfq"]) + ComputedValue(-12.0M, ScopedVar ["delta"; "leg2"; "underlying"; "rfq"]) * ComputedValue(100M, ScopedVar ["size"; "leg2"; "underlying"; "rfq"])) / ComputedValue(100M, ScopedVar ["baseSize"; "underlying"; "rfq"])) 
+            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant -100.0M
+            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant 12.0M
+            Scoped("rfq", Scoped("underlying", Local "baseSize")), Computed(100.0M, Expression.BinaryNode(MinOf, Expression.UnaryNode(AbsoluteValue, ComputedValue(100M, ScopedVar ["size"; "leg1"; "underlying"; "rfq"])), Expression.UnaryNode(AbsoluteValue, ComputedValue(-100M, ScopedVar ["size"; "leg2"; "underlying"; "rfq"]))))
+            Scoped("rfq", Scoped("underlying", Local "weightedDelta")), Computed(-2.0M, (ComputedValue(10.0M, ScopedVar ["delta"; "leg1"; "underlying"; "rfq"]) * ComputedValue(100M, ScopedVar ["size"; "leg1"; "underlying"; "rfq"]) + ComputedValue(12.0M, ScopedVar ["delta"; "leg2"; "underlying"; "rfq"]) * ComputedValue(-100M, ScopedVar ["size"; "leg2"; "underlying"; "rfq"])) / ComputedValue(100M, ScopedVar ["baseSize"; "underlying"; "rfq"])) 
         ])
 
 let [<Test>] ``Exec fees`` () =

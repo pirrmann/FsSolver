@@ -10,6 +10,7 @@ module Concretizer =
             | InnerScopeVar(name, varScope) -> InnerScopeVar(name, varScope @ [scope.Name])
             | OuterScopeVar(name, 1) -> Var name
             | OuterScopeVar(name, levelsUp) -> OuterScopeVar(name, levelsUp - 1)
+            | UnaryNode(op, n) -> UnaryNode(op, addScopeToVariables scope n)
             | BinaryNode(op, n1, n2) -> BinaryNode(op, addScopeToVariables scope n1, addScopeToVariables scope n2)
             | _ -> node
 
@@ -34,6 +35,7 @@ module Concretizer =
                 | Last e ->
                     let lastScope = scope.Children |> Seq.last
                     flatten true lastScope e
+                | UnaryNode(op, n) -> UnaryNode(op, flatten false scope n)
                 | BinaryNode(op, n1, n2) -> BinaryNode(op, flatten false scope n1, flatten false scope n2)
                 | _ -> node
 
@@ -43,6 +45,7 @@ module Concretizer =
 
         let rec toExpression node =
             match node with
+            | UnaryNode(op, n) -> Expression.UnaryNode(op, n |> toExpression)
             | BinaryNode(op, n1, n2) -> Expression.BinaryNode(op, n1 |> toExpression, n2 |> toExpression)
             | Const c -> Expression.Value(Constant c)
             | Var name -> LocalVar name
@@ -62,6 +65,7 @@ module Concretizer =
         let rec addScopeToVariables scope expression =
             match expression with
             | Expression.Var v -> Expression.Var(Scoped(scope.Name, v))
+            | Expression.UnaryNode(op, n) -> Expression.UnaryNode(op, addScopeToVariables scope n)
             | Expression.BinaryNode(op, n1, n2) -> Expression.BinaryNode(op, addScopeToVariables scope n1, addScopeToVariables scope n2)
             | _ -> expression
 

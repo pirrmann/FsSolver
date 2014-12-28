@@ -14,12 +14,20 @@ module Solver =
             match Map.tryFind id values with
             | Some(value:Value) -> Expression.Value(Computed(value.Evaluated, v))
             | None -> v
+        | Expression.UnaryNode(op, e) ->
+            Expression.UnaryNode(op, replaceValues values e)
         | Expression.BinaryNode(op, e1, e2) ->
             Expression.BinaryNode(op, replaceValues values e1, replaceValues values e2)
         | Expression.Value _ -> expression
 
     let rec private simplify expression =
         match expression with
+        | Expression.UnaryNode(op, e) ->
+            let se = simplify e
+            match se with
+            | Expression.Value(v) ->
+                Expression.Value(Computed(op.ToOperator v.Evaluated, expression))
+            | _ -> Expression.UnaryNode(op, se)
         | Expression.BinaryNode(op, e1, e2) ->
             let se1, se2 = simplify e1, simplify e2
             match se1, se2 with
@@ -30,6 +38,8 @@ module Solver =
 
     let rec private getVariablesIds expression = seq {
         match expression with
+        | Expression.UnaryNode(_, e) ->
+            yield! getVariablesIds e
         | Expression.BinaryNode(_, e1, e2) ->
             yield! getVariablesIds e1
             yield! getVariablesIds e2
@@ -40,6 +50,8 @@ module Solver =
 
     let rec private getVariablesInComputedValues expression = seq {
         match expression with
+        | Expression.UnaryNode(_, e) ->
+            yield! getVariablesInComputedValues e
         | Expression.BinaryNode(_, e1, e2) ->
             yield! getVariablesInComputedValues e1
             yield! getVariablesInComputedValues e2
@@ -50,6 +62,8 @@ module Solver =
 
     let rec private getExistingBindings expression = seq {
         match expression with
+        | Expression.UnaryNode(_, e) ->
+            yield! getExistingBindings e
         | Expression.BinaryNode(_, e1, e2) ->
             yield! getExistingBindings e1
             yield! getExistingBindings e2

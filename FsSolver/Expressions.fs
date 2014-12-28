@@ -1,5 +1,14 @@
 ﻿namespace FsSolver
 
+type UnaryOperator =
+    | AbsoluteValue
+    member op.FormatString =
+        match op with
+        | AbsoluteValue -> "Abs(%O)"
+    member op.ToOperator:(decimal->decimal) =
+        match op with
+        | AbsoluteValue -> abs
+
 type Operator =
     | Addition
     | Substraction
@@ -28,6 +37,7 @@ type Operator =
 type Expression =
     | Var of Variable
     | Value of Value
+    | UnaryNode of UnaryOperator * Expression
     | BinaryNode of Operator * Expression * Expression
     static member (+) (x, y) = BinaryNode(Addition, x, y)
     static member (-) (x, y) = BinaryNode(Substraction, x, y)
@@ -39,6 +49,7 @@ type Expression =
         | Value(Constant c) -> sprintf "%M" c
         | Value(Computed(v, e)) -> sprintf "[%O = %M]" e v
         | Value(Incoherent(e, _)) -> sprintf "[%O is incoherent]" e
+        | UnaryNode(op, e) -> sprintf (new PrintfFormat<_,_,_,_>(op.FormatString)) e
         | BinaryNode(op, e1, e2) -> sprintf (new PrintfFormat<_,_,_,_>(op.FormatString)) e1  e2
 and Value =
     | Constant of decimal
@@ -51,6 +62,7 @@ and Value =
         | Expression.Value(Computed(_, Expression.Var _)) -> expr
         | Expression.Value(Computed(_, e)) -> e
         | Expression.Value(Incoherent(e, _)) -> e
+        | Expression.UnaryNode(op, e) -> Expression.UnaryNode(op, Value.keepOnlyVariables e)
         | Expression.BinaryNode(op, e1, e2) -> Expression.BinaryNode(op, Value.keepOnlyVariables e1, Value.keepOnlyVariables e2)
     member x.Evaluated = match x with
                          | Constant c -> c

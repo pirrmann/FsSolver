@@ -9,7 +9,7 @@ type Settings = {
 
 let GetRules settings = seq {
         //weighted delta
-        yield ForAllChildren(Var "BaseSize" === Min(Var "Size"))
+        yield ForAllChildren(Var "BaseSize" === Min(Abs(Var "Size")))
         yield ForAllChildren(Var "WeightedDelta" * Var "BaseSize" === Sum(Var "Delta" * Var "Size"))
         
         //exec fees

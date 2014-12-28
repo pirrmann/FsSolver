@@ -7,6 +7,7 @@ type RuleNode =
     | InnerScopeVar of string * (string list)
     | OuterScopeVar of string * int
     | Const of decimal
+    | UnaryNode of UnaryOperator * RuleNode
     | BinaryNode of Operator * RuleNode * RuleNode
     | Sum of RuleNode
     | Min of RuleNode
@@ -23,6 +24,7 @@ type RuleNode =
         | InnerScopeVar(name, scope) -> sprintf "%s.%s" (System.String.Join(".", scope)) name
         | OuterScopeVar(name, levelsUp) -> new System.String('^', levelsUp) + name
         | Const c -> sprintf "%M" c
+        | UnaryNode(op, e) -> sprintf (new PrintfFormat<_,_,_,_>(op.FormatString)) e
         | BinaryNode(op, e1, e2) -> sprintf (new PrintfFormat<_,_,_,_>(op.FormatString)) e1  e2
         | Sum(e) -> sprintf "Sum(%O)" e
         | Min(e) -> sprintf "Min(%O)" e
@@ -39,3 +41,7 @@ type Scope = { Name:string; Children: Scope list } with
     static member Create(name, children) = {
         Name = name;
         Children = children |> Array.toList }
+
+[<AutoOpen>]
+module Shortcuts =
+    let Abs node = UnaryNode(AbsoluteValue, node)

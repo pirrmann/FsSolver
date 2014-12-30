@@ -83,6 +83,8 @@ type BoundProblem = {
                     match p.Binders.TryFind binding.Key with
                     | Some binder ->
                         if not (p.Problem.Bindings.ContainsKey binding.Key) then
-                            binder.Set(v.Evaluated)
+                            match binder.Set with
+                            | Some setter -> setter(v.Evaluated)
+                            | None -> () // don't try to set values without setters
                     | None -> () // ignore intermediate unbound value
         } |> Seq.toArray

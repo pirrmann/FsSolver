@@ -5,7 +5,7 @@ open System.Linq.Expressions
 
 type GetterSetter = {
     Get: unit -> decimal option;
-    Set: decimal -> unit } with
+    Set: (decimal -> unit) option } with
 
     static member FromLambda (property:Expression<System.Func<System.Nullable<decimal>>>) =
         let fromBody (body:Expression) needConvert =
@@ -21,7 +21,7 @@ type GetterSetter = {
                     Get = fun () ->
                             let v = getter.Invoke()
                             if v.HasValue then Some(v.Value) else None
-                    Set = fun v -> setter.Invoke(v)
+                    Set = Some(fun v -> setter.Invoke(v))
                 }
             | _ -> invalidArg "property" "This is not a direct member access"
 
@@ -31,15 +31,18 @@ type GetterSetter = {
         | _ -> fromBody property.Body true
 
     static member FromProperty (property:System.Reflection.PropertyInfo, data) =
+        let getter = property.GetGetMethod()
+        let setter = property.GetSetMethod()
         {
             Get = fun () ->
-                let value = property.GetGetMethod().Invoke(data, [||])
+                let value = getter.Invoke(data, [||])
                 match value with
                 | :? System.Nullable<decimal> as d when d.HasValue -> Some d.Value
                 | :? decimal as d -> Some d
                 | _ ->  None
-            Set = fun value ->
-                property.GetSetMethod().Invoke(data, [| value |]) |> ignore
+            Set = if setter = null then None
+                  else
+                    Some(fun value -> setter.Invoke(data, [| value |]) |> ignore)
         }
 
 type Binder = Binder of variable:Variable * getterSetter:GetterSetter with

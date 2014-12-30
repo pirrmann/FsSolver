@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>FsSolver</id>
-    <version>0.0.6</version>
+    <version>0.0.7</version>
     <authors>Pierre Irrmann</authors>
     <owners>Pierre Irrmann</owners>
     <licenseUrl>https://raw.githubusercontent.com/pirrmann/FsSolver/master/LICENCE.txt</licenseUrl>

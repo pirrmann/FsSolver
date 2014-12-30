@@ -24,11 +24,11 @@ module Concretizer =
                 | Min e ->
                     scope.Children
                     |> Seq.map (fun s -> flatten true s e)
-                    |> Seq.reduce (fun x y -> BinaryNode(MinOf, x, y))
+                    |> Seq.reduce (fun x y -> BinaryNode(Operator.MinOf, x, y))
                 | Max e ->
                     scope.Children
                     |> Seq.map (fun s -> flatten true s e)
-                    |> Seq.reduce (fun x y -> BinaryNode(MaxOf, x, y))
+                    |> Seq.reduce (fun x y -> BinaryNode(Operator.MaxOf, x, y))
                 | First e ->
                     let firstScope = scope.Children |> Seq.head
                     flatten true firstScope e

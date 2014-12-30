@@ -9,6 +9,7 @@ type UnaryOperator =
         match op with
         | AbsoluteValue -> abs
 
+[<RequireQualifiedAccess>]
 type Operator =
     | Addition
     | Substraction
@@ -39,10 +40,10 @@ type Expression =
     | Value of Value
     | UnaryNode of UnaryOperator * Expression
     | BinaryNode of Operator * Expression * Expression
-    static member (+) (x, y) = BinaryNode(Addition, x, y)
-    static member (-) (x, y) = BinaryNode(Substraction, x, y)
-    static member (*) (x, y) = BinaryNode(Product, x, y)
-    static member (/) (x, y) = BinaryNode(Division, x, y)
+    static member (+) (x, y) = BinaryNode(Operator.Addition, x, y)
+    static member (-) (x, y) = BinaryNode(Operator.Substraction, x, y)
+    static member (*) (x, y) = BinaryNode(Operator.Product, x, y)
+    static member (/) (x, y) = BinaryNode(Operator.Division, x, y)
     override x.ToString() =
         match x with
         | Var id -> id.ToString()

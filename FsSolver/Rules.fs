@@ -14,10 +14,10 @@ type RuleNode =
     | Max of RuleNode
     | First of RuleNode
     | Last of RuleNode
-    static member (+) (x, y) = BinaryNode(Addition, x, y)
-    static member (-) (x, y) = BinaryNode(Substraction, x, y)
-    static member (*) (x, y) = BinaryNode(Product, x, y)
-    static member (/) (x, y) = BinaryNode(Division, x, y)
+    static member (+) (x, y) = BinaryNode(Operator.Addition, x, y)
+    static member (-) (x, y) = BinaryNode(Operator.Substraction, x, y)
+    static member (*) (x, y) = BinaryNode(Operator.Product, x, y)
+    static member (/) (x, y) = BinaryNode(Operator.Division, x, y)
     override x.ToString() =
         match x with
         | Var name -> name

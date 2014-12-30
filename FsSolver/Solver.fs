@@ -127,20 +127,20 @@ module Solver =
                 match n1, n2 with
                 | _, Expression.Value v2 ->
                     match op with
-                    | Addition -> Some(n1, Expression.Value(v - v2))
-                    | Substraction -> Some(n1, Expression.Value(v + v2))
-                    | Product -> if v2.Evaluated <> 0M then Some(n1, Expression.Value(v / v2)) else None
-                    | Division -> if v2.Evaluated <> 0M then Some(n1, Expression.Value(v * v2)) else None
-                    | MinOf
-                    | MaxOf -> None
+                    | Operator.Addition -> Some(n1, Expression.Value(v - v2))
+                    | Operator.Substraction -> Some(n1, Expression.Value(v + v2))
+                    | Operator.Product -> if v2.Evaluated <> 0M then Some(n1, Expression.Value(v / v2)) else None
+                    | Operator.Division -> if v2.Evaluated <> 0M then Some(n1, Expression.Value(v * v2)) else None
+                    | Operator.MinOf
+                    | Operator.MaxOf -> None
                 | Expression.Value v2, _ ->
                     match op with
-                    | Addition -> Some(n2, Expression.Value(v - v2))
-                    | Substraction -> Some(n2, Expression.Value(v2 - v))
-                    | Product -> if v2.Evaluated <> 0M then Some(n2, Expression.Value(v / v2)) else None
-                    | Division -> failwith "The variable must be in the numerator"
-                    | MinOf
-                    | MaxOf -> None
+                    | Operator.Addition -> Some(n2, Expression.Value(v - v2))
+                    | Operator.Substraction -> Some(n2, Expression.Value(v2 - v))
+                    | Operator.Product -> if v2.Evaluated <> 0M then Some(n2, Expression.Value(v / v2)) else None
+                    | Operator.Division -> failwith "The variable must be in the numerator"
+                    | Operator.MinOf
+                    | Operator.MaxOf -> None
                 | _ -> failwith "There should be a value on one side"
 
             match newEquality with

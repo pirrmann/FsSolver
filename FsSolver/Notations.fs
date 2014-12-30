@@ -18,7 +18,8 @@ module Notations =
     let (=@=) expr1 expr2 = expr1, expr2
     let (===) expr1 expr2 = Rules.Equality(expr1, expr2)
 
-    let ParentVar name = Rules.OuterScopeVar(name, 1)
-
+    let inline ParentVar name = Rules.OuterScopeVar(name, 1)
     let inline (!) x = Rules.Var x
     let inline Σ xs = Rules.Sum xs
+    let MinOf nodes = nodes |> Seq.reduce (fun x y -> Rules.BinaryNode(Operator.MinOf, x, y))
+    let MaxOf nodes = nodes |> Seq.reduce (fun x y -> Rules.BinaryNode(Operator.MaxOf, x, y))

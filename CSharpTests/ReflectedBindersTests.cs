@@ -13,6 +13,7 @@ namespace ReflectedBindersTests
     {
         public decimal? TotalExecFees { get; set; }
         public decimal? FeesPerLot { get; set; }
+        public decimal? SomePropertyWithoutSetter { get { return null; } }
         public IEnumerable<Underlying> Underlyings { get; set; }
     }
 
@@ -57,6 +58,7 @@ namespace ReflectedBindersTests
 
             Assert.IsEmpty(incoherencies);
 
+            Assert.IsNull(rfq.SomePropertyWithoutSetter);
             Assert.AreEqual(200M, rfq.TotalExecFees);
 
             var underlying = rfq.Underlyings.First();

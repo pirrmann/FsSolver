@@ -19,3 +19,6 @@ module Notations =
     let (===) expr1 expr2 = Rules.Equality(expr1, expr2)
 
     let ParentVar name = Rules.OuterScopeVar(name, 1)
+
+    let inline (!) x = Rules.Var x
+    let inline Σ xs = Rules.Sum xs

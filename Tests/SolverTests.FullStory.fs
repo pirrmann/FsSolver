@@ -9,8 +9,8 @@ open FsSolver.Rules
 let [<Test>] ``Weighted delta`` () =
     let rules =
         [
-            ForAllChildren(Var "baseSize" === Min(Abs(Var "size")))
-            ForAllChildren(Var "weightedDelta" * Var "baseSize" === Sum(Var "delta" * Var "size"))
+            ForAllChildren(!"baseSize" === Min(Abs(!"size")))
+            ForAllChildren(!"weightedDelta" * !"baseSize" === Σ(!"delta" * !"size"))
         ]
 
     let scope =
@@ -50,8 +50,8 @@ let [<Test>] ``Weighted delta`` () =
 let [<Test>] ``Exec fees`` () =
     let rules =
         [
-            Var "totalExecFees" === Sum(Var "execFees")
-            ForAllChildren(Var "execFees" === Sum(Var "size") * ParentVar "feesPerLot")
+            !"totalExecFees" === Σ(!"execFees")
+            ForAllChildren(!"execFees" === Σ(!"size") * ParentVar "feesPerLot")
         ]
 
     let scope =

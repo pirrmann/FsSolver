@@ -7,7 +7,7 @@ open FsSolver
 open FsSolver.Rules
 
 let [<Test>] ``Concretization of an equality concretizes both nodes`` () =
-    let rule = Var "x" === Const 1M
+    let rule = !"x" === Const 1M
     let scope = { Scope.Named "root" with Children = [Scope.Named "child1"
                                                       Scope.Named "child2"] }
     let concreteRule = Concretizer.concretizeRule scope rule |> Set.ofSeq
@@ -15,7 +15,7 @@ let [<Test>] ``Concretization of an equality concretizes both nodes`` () =
     concreteRule |> should equal (Set.ofList [ScopedVar ["x"; "root"] =@= ConstValue 1M])
 
 let [<Test>] ``Concretization in rules is applied to all children`` () =
-    let rule = ForAllChildren(Var "x" === Const 1M)
+    let rule = ForAllChildren(!"x" === Const 1M)
     let scope = { Scope.Named "root" with Children = [Scope.Named "child1"
                                                       Scope.Named "child2"] }
     let concreteRule = Concretizer.concretizeRule scope rule |> Set.ofSeq
@@ -24,7 +24,7 @@ let [<Test>] ``Concretization in rules is applied to all children`` () =
                                               ScopedVar ["x"; "child2"; "root"] =@= ConstValue 1M])
 
 let [<Test>] ``Concretization can be applied in grand-children rules`` () =
-    let rule = ForAllChildren(ForAllChildren(Var "x" === Const 1M))
+    let rule = ForAllChildren(ForAllChildren(!"x" === Const 1M))
     let scope = { Scope.Named "root" with
                     Children = [{ Scope.Named "child1"
                                     with Children = [Scope.Named "baby1"
@@ -42,7 +42,7 @@ let [<Test>] ``Concretization can be applied in grand-children rules`` () =
                                               ScopedVar ["x"; "baby3"; "child2"; "root"] =@= ConstValue 1M])
 
 let [<Test>] ``Concretization handles outer scope variales in ForAllChildren rules`` () =
-    let rule = ForAllChildren(Var "z" === Var "y" * ParentVar "x")
+    let rule = ForAllChildren(!"z" === !"y" * ParentVar "x")
     let scope = { Scope.Named "root" with Children = [Scope.Named "child1"
                                                       Scope.Named "child2"] }
     let concreteRule = Concretizer.concretizeRule scope rule |> Set.ofSeq
@@ -51,7 +51,7 @@ let [<Test>] ``Concretization handles outer scope variales in ForAllChildren rul
                                               ScopedVar ["z"; "child2"; "root"] =@= ScopedVar ["y"; "child2"; "root"] * ScopedVar ["x"; "root"]])
 
 let [<Test>] ``Concretization of First and Last rules`` () =
-    let rule = Var "z" === First(Var "x") - Last(Var "y")
+    let rule = !"z" === First(!"x") - Last(!"y")
     let scope = { Scope.Named "root" with Children = [Scope.Named "child1"
                                                       Scope.Named "child2"] }
     let concreteRule = Concretizer.concretizeRule scope rule |> Set.ofSeq

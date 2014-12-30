@@ -9,13 +9,13 @@ type Settings = {
 
 let GetRules settings = seq {
         //weighted delta
-        yield ForAllChildren(Var "BaseSize" === Min(Abs(Var "Size")))
-        yield ForAllChildren(Var "WeightedDelta" * Var "BaseSize" === Sum(Var "Delta" * Var "Size"))
+        yield ForAllChildren(!"BaseSize" === Min(Abs(!"Size")))
+        yield ForAllChildren(!"WeightedDelta" * !"BaseSize" === Σ(!"Delta" * !"Size"))
         
-        yield Var "SomePropertyWithoutSetter" === Const 1M
+        yield !"SomePropertyWithoutSetter" === Const 1M
 
         //exec fees
-        yield ForAllChildren(Var "ExecFees" === Sum(Var "Size") * ParentVar "FeesPerLot")
+        yield ForAllChildren(!"ExecFees" === Σ(!"Size") * ParentVar "FeesPerLot")
         if settings.UseTotalExecFees then
-            yield Var "TotalExecFees" === Sum(Var "ExecFees")
+            yield Var "TotalExecFees" === Σ(!"ExecFees")
     }

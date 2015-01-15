@@ -53,6 +53,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Variables.fs" />
     <Compile Include="Binders.fs" />
     <Compile Include="Expressions.fs" />

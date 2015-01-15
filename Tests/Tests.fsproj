@@ -50,6 +50,7 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Compile Include="SolverTests.Simplify.fs" />
     <Compile Include="SolverTests.Step.fs" />
     <Compile Include="SolverTests.Solve.fs" />
     <Compile Include="SolverTests.Incoherencies.fs" />

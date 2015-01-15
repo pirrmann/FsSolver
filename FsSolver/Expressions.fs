@@ -3,12 +3,15 @@
 [<RequireQualifiedAccess>]
 type UnaryOperator =
     | Abs
+    | Sign
     member op.FormatString =
         match op with
         | Abs -> "Abs(%O)"
+        | Sign -> "Sign(%O)"
     member op.ToOperator:(decimal->decimal) =
         match op with
         | Abs -> abs
+        | Sign -> sign >> (fun x -> if x = 0 then 1M else decimal x)
 
 [<RequireQualifiedAccess>]
 type Operator =

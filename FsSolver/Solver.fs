@@ -20,7 +20,7 @@ module Solver =
             Expression.BinaryNode(op, replaceValues values e1, replaceValues values e2)
         | Expression.Value _ -> expression
 
-    let rec private simplify expression =
+    let rec internal simplify expression =
         match expression with
         | Expression.UnaryNode(op, e) ->
             let se = simplify e
@@ -161,7 +161,7 @@ module Solver =
             | 1 -> isolateSingleVariable eq
             | _ -> Seq.empty
 
-    let step problem =
+    let internal step problem =
         // inject the bound values in variables and simplify
         let injectAndSimplify = (replaceValues problem.Bindings) >> simplify
         let simplifiedRules = problem.Rules |> Set.map (fun (x, y) -> injectAndSimplify x, injectAndSimplify y)

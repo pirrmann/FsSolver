@@ -1,13 +1,14 @@
 ﻿namespace FsSolver
 
+[<RequireQualifiedAccess>]
 type UnaryOperator =
-    | AbsoluteValue
+    | Abs
     member op.FormatString =
         match op with
-        | AbsoluteValue -> "Abs(%O)"
+        | Abs -> "Abs(%O)"
     member op.ToOperator:(decimal->decimal) =
         match op with
-        | AbsoluteValue -> abs
+        | Abs -> abs
 
 [<RequireQualifiedAccess>]
 type Operator =

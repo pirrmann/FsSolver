@@ -43,7 +43,7 @@ let [<Test>] ``Weighted delta`` () =
             Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant -100.0M
             Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant 12.0M
-            Scoped("rfq", Scoped("underlying", Local "baseSize")), Computed(100.0M, Expression.BinaryNode(Operator.MinOf, Expression.UnaryNode(AbsoluteValue, ComputedValue(100M, ScopedVar ["size"; "leg1"; "underlying"; "rfq"])), Expression.UnaryNode(AbsoluteValue, ComputedValue(-100M, ScopedVar ["size"; "leg2"; "underlying"; "rfq"]))))
+            Scoped("rfq", Scoped("underlying", Local "baseSize")), Computed(100.0M, Expression.BinaryNode(Operator.MinOf, Expression.UnaryNode(UnaryOperator.Abs, ComputedValue(100M, ScopedVar ["size"; "leg1"; "underlying"; "rfq"])), Expression.UnaryNode(UnaryOperator.Abs, ComputedValue(-100M, ScopedVar ["size"; "leg2"; "underlying"; "rfq"]))))
             Scoped("rfq", Scoped("underlying", Local "weightedDelta")), Computed(-2.0M, (ComputedValue(10.0M, ScopedVar ["delta"; "leg1"; "underlying"; "rfq"]) * ComputedValue(100M, ScopedVar ["size"; "leg1"; "underlying"; "rfq"]) + ComputedValue(12.0M, ScopedVar ["delta"; "leg2"; "underlying"; "rfq"]) * ComputedValue(-100M, ScopedVar ["size"; "leg2"; "underlying"; "rfq"])) / ComputedValue(100M, ScopedVar ["baseSize"; "underlying"; "rfq"])) 
         ])
 

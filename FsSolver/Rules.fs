@@ -44,4 +44,4 @@ type Scope = { Name:string; Children: Scope list } with
 
 [<AutoOpen>]
 module Shortcuts =
-    let Abs node = UnaryNode(AbsoluteValue, node)
+    let Abs node = UnaryNode(UnaryOperator.Abs, node)

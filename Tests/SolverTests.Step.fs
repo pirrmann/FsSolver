@@ -129,51 +129,51 @@ let [<Test>] ``Linear relation with a single variable is solved - solve for net`
         Rules = [ LocalVar("net") =@= LocalVar("gross") * (ConstValue(1M) + LocalVar("execFees") / ConstValue(10000M)) ] |> Set.ofList
         Bindings =
             [
-                Local "gross", Constant 123.02M
-                Local "execFees", Constant 2M
+                Local "gross" |> ProvidedWith 123.02M
+                Local "execFees" |> ProvidedWith 2M
             ] |> Map.ofList }
 
     let newProblem = problem |> Solver.step
 
     newProblem.Rules |> should equal Set.empty
     newProblem.Bindings
-        |> should equal (Map.ofList [Local "net", Computed(123.044604M, ComputedValue(123.02M, LocalVar "gross") * (ConstValue 1M + ComputedValue(2M, LocalVar "execFees") / ConstValue 10000M))
-                                     Local "gross", Constant 123.02M
-                                     Local "execFees", Constant 2M])
+        |> should equal (Map.ofList [Local "net", Computed(123.044604M, ProvidedValue(123.02M, Local "gross") * (ConstValue 1M + ProvidedValue(2M, Local "execFees") / ConstValue 10000M))
+                                     Local "gross" |> ProvidedWith 123.02M
+                                     Local "execFees" |> ProvidedWith 2M])
 
 let [<Test>] ``Linear relation with a single variable is solved - solve for gross`` () =
     let problem = {
         Rules = [ LocalVar("net") =@= LocalVar("gross") * (ConstValue(1M) + LocalVar("execFees") / ConstValue(10000M)) ] |> Set.ofList
         Bindings =
             [
-                Local "net", Constant 123.044604M
-                Local "execFees", Constant 2M
+                Local "net" |> ProvidedWith 123.044604M
+                Local "execFees" |> ProvidedWith 2M
             ] |> Map.ofList }
 
     let newProblem = problem |> Solver.step
 
     newProblem.Rules |> should equal Set.empty
     newProblem.Bindings
-        |> should equal (Map.ofList [Local "net", Constant 123.044604M
-                                     Local "gross", Computed(123.02M, ComputedValue(123.044604M, LocalVar "net") / (ConstValue 1M + ComputedValue(2M, LocalVar "execFees") / ConstValue 10000M))
-                                     Local "execFees", Constant 2M])
+        |> should equal (Map.ofList [Local "net" |> ProvidedWith 123.044604M
+                                     Local "gross", Computed(123.02M, ProvidedValue(123.044604M, Local "net") / (ConstValue 1M + ProvidedValue(2M, Local "execFees") / ConstValue 10000M))
+                                     Local "execFees" |> ProvidedWith 2M])
 
 let [<Test>] ``Linear relation with a single variable is solved - solve for fees`` () =
     let problem = {
         Rules = [ LocalVar("net") =@= LocalVar("gross") * (ConstValue(1M) + LocalVar("execFees") / ConstValue(10000M)) ] |> Set.ofList
         Bindings =
             [
-                Local "gross", Constant 123.02M
-                Local "net", Constant 123.044604M
+                Local "gross" |> ProvidedWith 123.02M
+                Local "net" |> ProvidedWith 123.044604M
             ] |> Map.ofList }
 
     let newProblem = problem |> Solver.step
 
     newProblem.Rules |> should equal Set.empty
     newProblem.Bindings
-        |> should equal (Map.ofList [Local "net", Constant 123.044604M
-                                     Local "gross", Constant 123.02M
-                                     Local "execFees", Computed(2M, (ComputedValue(123.044604M, LocalVar "net") / ComputedValue(123.02M, LocalVar "gross") - ConstValue 1M) * ConstValue 10000M)])
+        |> should equal (Map.ofList [Local "net" |> ProvidedWith 123.044604M
+                                     Local "gross" |> ProvidedWith 123.02M
+                                     Local "execFees", Computed(2M, (ProvidedValue(123.044604M, Local "net") / ProvidedValue(123.02M, Local "gross") - ConstValue 1M) * ConstValue 10000M)])
 
 let [<Test>] ``New bindings are injected in the rules in 2nd step`` () =
     let problem = {
@@ -184,15 +184,15 @@ let [<Test>] ``New bindings are injected in the rules in 2nd step`` () =
             ] |> Set.ofList
         Bindings =
             [
-                Local "x", Constant -0.5M
+                Local "x" |> ProvidedWith -0.5M
             ] |> Map.ofList }
 
     let newProblem = problem |> Solver.step |> Solver.step
 
     newProblem.Rules |> should equal Set.empty
     newProblem.Bindings
-        |> should equal (Map.ofList [Local "x", Constant -0.5M
-                                     Local "y", Computed(0.5M, ComputedValue(-0.5M, LocalVar "x") + ConstValue 1M)
+        |> should equal (Map.ofList [Local "x" |> ProvidedWith -0.5M
+                                     Local "y", Computed(0.5M, ProvidedValue(-0.5M, Local "x") + ConstValue 1M)
                                      Local "z", Computed(1M, ComputedValue(0.5M, LocalVar "y") * ConstValue 2M)])
 
 let [<Test>] ``Variables in different scopes are not mixed up`` () =
@@ -203,14 +203,14 @@ let [<Test>] ``Variables in different scopes are not mixed up`` () =
             ] |> Set.ofList
         Bindings =
             [
-                Local "net", Constant 2M
-                Scoped("leg1", Local("net")), Constant 1M
+                Local "net" |> ProvidedWith 2M
+                Scoped("leg1", Local("net")) |> ProvidedWith 1M
             ] |> Map.ofList }
 
     let newProblem = problem |> Solver.step |> Solver.step
 
     newProblem.Rules |> should equal Set.empty
     newProblem.Bindings
-        |> should equal (Map.ofList [Local "net", Constant 2M
-                                     Scoped("leg1", Local("net")), Constant 1M
-                                     Scoped("leg2", Local("net")), Computed(1M, ComputedValue(2M, LocalVar "net") - ComputedValue(1M, ScopedVar ["net"; "leg1"]))])
+        |> should equal (Map.ofList [Local "net" |> ProvidedWith 2M
+                                     Scoped("leg1", Local("net")) |> ProvidedWith 1M
+                                     Scoped("leg2", Local("net")), Computed(1M, ProvidedValue(2M, Local "net") - ProvidedValue(1M, ScopedVariable ["net"; "leg1"]))])

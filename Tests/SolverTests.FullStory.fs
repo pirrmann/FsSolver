@@ -27,10 +27,10 @@ let [<Test>] ``Weighted delta`` () =
         Rules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
         Bindings =
         [
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant -100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant 12.0M
+            ScopedVariable ["size" ; "leg1"; "underlying"; "rfq"] |> ProvidedWith 100.0M
+            ScopedVariable ["delta"; "leg1"; "underlying"; "rfq"] |> ProvidedWith 10.0M
+            ScopedVariable ["size" ; "leg2"; "underlying"; "rfq"] |> ProvidedWith -100.0M
+            ScopedVariable ["delta"; "leg2"; "underlying"; "rfq"] |> ProvidedWith 12.0M
         ] |> Map.ofList }
 
     let newProblem = problem |> Solver.solve
@@ -39,12 +39,12 @@ let [<Test>] ``Weighted delta`` () =
     newProblem.Bindings
         |> should equal
         (Map.ofList [
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant -100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant 12.0M
-            Scoped("rfq", Scoped("underlying", Local "baseSize")), Computed(100.0M, Expression.BinaryNode(Operator.MinOf, Expression.UnaryNode(UnaryOperator.Abs, ComputedValue(100M, ScopedVar ["size"; "leg1"; "underlying"; "rfq"])), Expression.UnaryNode(UnaryOperator.Abs, ComputedValue(-100M, ScopedVar ["size"; "leg2"; "underlying"; "rfq"]))))
-            Scoped("rfq", Scoped("underlying", Local "weightedDelta")), Computed(-2.0M, (ComputedValue(10.0M, ScopedVar ["delta"; "leg1"; "underlying"; "rfq"]) * ComputedValue(100M, ScopedVar ["size"; "leg1"; "underlying"; "rfq"]) + ComputedValue(12.0M, ScopedVar ["delta"; "leg2"; "underlying"; "rfq"]) * ComputedValue(-100M, ScopedVar ["size"; "leg2"; "underlying"; "rfq"])) / ComputedValue(100M, ScopedVar ["baseSize"; "underlying"; "rfq"])) 
+            ScopedVariable ["size" ; "leg1"; "underlying"; "rfq"] |> ProvidedWith 100.0M
+            ScopedVariable ["delta"; "leg1"; "underlying"; "rfq"] |> ProvidedWith 10.0M
+            ScopedVariable ["size" ; "leg2"; "underlying"; "rfq"] |> ProvidedWith -100.0M
+            ScopedVariable ["delta"; "leg2"; "underlying"; "rfq"] |> ProvidedWith 12.0M
+            ScopedVariable ["baseSize"; "underlying"; "rfq"], Computed(100.0M, Expression.BinaryNode(Operator.MinOf, Expression.UnaryNode(UnaryOperator.Abs, ProvidedValue(100M, ScopedVariable ["size"; "leg1"; "underlying"; "rfq"])), Expression.UnaryNode(UnaryOperator.Abs, ProvidedValue(-100M, ScopedVariable ["size"; "leg2"; "underlying"; "rfq"]))))
+            ScopedVariable ["weightedDelta"; "underlying"; "rfq"], Computed(-2.0M, (ProvidedValue(10.0M, ScopedVariable ["delta"; "leg1"; "underlying"; "rfq"]) * ProvidedValue(100M, ScopedVariable ["size"; "leg1"; "underlying"; "rfq"]) + ProvidedValue(12.0M, ScopedVariable ["delta"; "leg2"; "underlying"; "rfq"]) * ProvidedValue(-100M, ScopedVariable ["size"; "leg2"; "underlying"; "rfq"])) / ComputedValue(100M, ScopedVar ["baseSize"; "underlying"; "rfq"])) 
         ])
 
 let [<Test>] ``Exec fees`` () =
@@ -68,9 +68,9 @@ let [<Test>] ``Exec fees`` () =
         Rules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
         Bindings =
         [
-            Scoped("rfq", Local "feesPerLot"), Constant 1.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
+            ScopedVariable ["feesPerLot"; "rfq"] |> ProvidedWith 1.0M
+            ScopedVariable ["size"; "leg1"; "underlying"; "rfq"] |> ProvidedWith 100.0M
+            ScopedVariable ["size"; "leg2"; "underlying"; "rfq"] |> ProvidedWith 100.0M
         ] |> Map.ofList }
 
     let newProblem = problem |> Solver.solve
@@ -79,9 +79,9 @@ let [<Test>] ``Exec fees`` () =
     newProblem.Bindings
         |> should equal
         (Map.ofList [
-            Scoped("rfq", Local "feesPerLot"), Constant 1.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
-            Scoped("rfq", Scoped("underlying", Local "execFees")), Computed(200.0M, (ComputedValue(100.0M, ScopedVar ["size"; "leg1"; "underlying"; "rfq"]) + ComputedValue(100.0M, ScopedVar ["size"; "leg2"; "underlying"; "rfq"])) * ComputedValue(1.0M, ScopedVar ["feesPerLot"; "rfq"]))
-            Scoped("rfq", Local "totalExecFees"), Computed(200.0M, ComputedValue(200.0M, ScopedVar ["execFees"; "underlying"; "rfq"]))
+            ScopedVariable ["feesPerLot"; "rfq"] |> ProvidedWith 1.0M
+            ScopedVariable ["size"; "leg1"; "underlying"; "rfq"] |> ProvidedWith 100.0M
+            ScopedVariable ["size"; "leg2"; "underlying"; "rfq"] |> ProvidedWith 100.0M
+            ScopedVariable ["execFees"; "underlying"; "rfq"], Computed(200.0M, (ProvidedValue(100.0M, ScopedVariable ["size"; "leg1"; "underlying"; "rfq"]) + ProvidedValue(100.0M, ScopedVariable ["size"; "leg2"; "underlying"; "rfq"])) * ProvidedValue(1.0M, ScopedVariable ["feesPerLot"; "rfq"]))
+            ScopedVariable ["totalExecFees"; "rfq"], Computed(200.0M, ComputedValue(200.0M, ScopedVar ["execFees"; "underlying"; "rfq"]))
         ])

@@ -52,7 +52,7 @@ type BoundProblem = {
                     |> Set.ofSeq
                 Bindings =
                     binders
-                    |> Seq.choose (fun (var, gs) -> gs.Get() |> Option.map(fun value -> var, Constant value))
+                    |> Seq.choose (fun (var, gs) -> gs.Get() |> Option.map(fun value -> var |> ProvidedWith value))
                     |> Map.ofSeq
             }
         }

@@ -12,7 +12,8 @@ module Solver =
         match expression with
         | Expression.Var(id) as v ->
             match Map.tryFind id values with
-            | Some(value:Value) -> Expression.Value(Computed(value.Evaluated, v))
+            | Some(Provided(_, _) as p) -> Expression.Value(p)
+            | Some(value) -> Expression.Value(Computed(value.Evaluated, v))
             | None -> v
         | Expression.UnaryNode(op, e) ->
             Expression.UnaryNode(op, replaceValues values e)
@@ -57,6 +58,7 @@ module Solver =
             yield! getVariablesInComputedValues e2
         | Expression.Value(Computed(_, e)) ->
             yield! getVariablesInComputedValues e
+        | Expression.Value(Provided(_, id))
         | Expression.Var id -> yield id
         | _ -> () }
 
@@ -67,7 +69,10 @@ module Solver =
         | Expression.BinaryNode(_, e1, e2) ->
             yield! getExistingBindings e1
             yield! getExistingBindings e2
-        | Expression.Value(Computed(_, Expression.Var v) as c) -> yield v, c
+
+        | Expression.Value(Provided(_, id) as v)
+        | Expression.Value(Computed(_, Expression.Var id) as v) -> yield id, v
+
         | Expression.Value(Computed(_, e)) ->
             yield! getExistingBindings e
         | _ -> () }
@@ -84,27 +89,23 @@ module Solver =
             | Incoherent(e, _), varContainer
             | varContainer, Incoherent(e, _) ->
                 match varContainer with
-                | Constant _ -> ()
+                | Constant _
+                | Provided _ -> ()
                 | Computed(_, e) -> yield! getAllIncoherences e Propagated
                 | Incoherent(_, _) -> failwith "Incoherences should be matched before this case"
-            | Constant(c), Computed(d, e)
-            | Computed(d, e), Constant(c) ->
-                let cv = ComputedValue(d, e)
-                if d <> c then
-                    yield! getAllIncoherences cv (Conflict([cv; ConstValue c]))
-                else
-                    yield! getExistingBindings cv
-            | Computed(d1, e1), Computed(d2, e2) ->
-                let cv1 = ComputedValue(d1, e1)
-                let cv2 = ComputedValue(d2, e2)
-                if d1 <> d2 then
-                    let conflict = Conflict [cv1; cv2]
-                    yield! getAllIncoherences cv1 conflict
-                    yield! getAllIncoherences cv2 conflict
-                else
-                    yield! getExistingBindings cv1
-                    yield! getExistingBindings cv2
+
             | Constant _, Constant _ -> invalidArg "eq" "This rule either always true or always false, therefore useless"
+
+            | v1, v2 ->
+                let value1 = Expression.Value v1
+                let value2 = Expression.Value v2
+                if v1.Evaluated <> v2.Evaluated then
+                    let conflict = Conflict [value1; value2]
+                    yield! getAllIncoherences value1 conflict
+                    yield! getAllIncoherences value2 conflict
+                else
+                    yield! getExistingBindings value1
+                    yield! getExistingBindings value2
         | _ -> invalidArg "eq" "The equality should contain values on both sides" }
 
     let rec private isolateSingleVariable eq =

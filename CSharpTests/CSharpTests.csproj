@@ -54,7 +54,6 @@
   <ItemGroup>
     <Compile Include="ReflectedBindersTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ExplicitBindersTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

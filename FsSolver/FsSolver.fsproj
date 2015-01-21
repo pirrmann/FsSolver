@@ -55,12 +55,13 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Variables.fs" />
-    <Compile Include="Binders.fs" />
     <Compile Include="Expressions.fs" />
     <Compile Include="Rules.fs" />
     <Compile Include="Notations.fs" />
     <Compile Include="Concretizer.fs" />
     <Compile Include="Solver.fs" />
+    <Compile Include="SolverValue.fs" />
+    <Compile Include="Binders.fs" />
     <Compile Include="BoundProblem.fs" />
   </ItemGroup>
   <ItemGroup>

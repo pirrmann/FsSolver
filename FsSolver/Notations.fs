@@ -14,9 +14,9 @@ module Notations =
 
     let ConstValue c = Expression.Value(Constant c)
     let ComputedValue = Computed >> Expression.Value
-    let ProvidedValue = Provided >> Expression.Value
+    let ProvidedValue (d, v) = Provided(d, v, Propagate) |> Expression.Value
 
-    let ProvidedWith value id = id, Provided(value, id)
+    let ProvidedWith value id = id, Provided(value, id, Propagate)
 
     let (=@=) expr1 expr2 = expr1, expr2
     let (===) expr1 expr2 = Rules.Equality(expr1, expr2)

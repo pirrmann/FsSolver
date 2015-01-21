@@ -12,7 +12,7 @@ module Solver =
         match expression with
         | Expression.Var(id) as v ->
             match Map.tryFind id values with
-            | Some(Provided(_, _) as p) -> Expression.Value(p)
+            | Some(Provided(_, _, _) as p) -> Expression.Value(p)
             | Some(value) -> Expression.Value(Computed(value.Evaluated, v))
             | None -> v
         | Expression.UnaryNode(op, e) ->
@@ -58,7 +58,7 @@ module Solver =
             yield! getVariablesInComputedValues e2
         | Expression.Value(Computed(_, e)) ->
             yield! getVariablesInComputedValues e
-        | Expression.Value(Provided(_, id))
+        | Expression.Value(Provided(_, id, _))
         | Expression.Var id -> yield id
         | _ -> () }
 
@@ -70,7 +70,7 @@ module Solver =
             yield! getExistingBindings e1
             yield! getExistingBindings e2
 
-        | Expression.Value(Provided(_, id) as v)
+        | Expression.Value(Provided(_, id, _) as v)
         | Expression.Value(Computed(_, Expression.Var id) as v) -> yield id, v
 
         | Expression.Value(Computed(_, e)) ->

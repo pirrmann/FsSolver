@@ -13,6 +13,8 @@ type UnaryOperator =
         | Abs -> abs
         | Sign -> sign >> (fun x -> if x = 0 then 1M else decimal x)
 
+type ConflictHandlingStrategy = | Ignore | Propagate
+
 [<RequireQualifiedAccess>]
 type Operator =
     | Addition
@@ -52,14 +54,14 @@ type Expression =
         match x with
         | Var id -> id.ToString()
         | Value(Constant c) -> sprintf "%M" c
-        | Value(Provided(v, id)) -> sprintf "[%O (%M, provided)]" id v
+        | Value(Provided(v, id, _)) -> sprintf "[%O (%M, provided)]" id v
         | Value(Computed(v, e)) -> sprintf "[%O = (%M, computed)]" e v
         | Value(Incoherent(e, _)) -> sprintf "[%O is incoherent]" e
         | UnaryNode(op, e) -> sprintf (new PrintfFormat<_,_,_,_>(op.FormatString)) e
         | BinaryNode(op, e1, e2) -> sprintf (new PrintfFormat<_,_,_,_>(op.FormatString)) e1  e2
 and Value =
     | Constant of decimal
-    | Provided of decimal * Variable
+    | Provided of decimal * Variable * ConflictHandlingStrategy
     | Computed of decimal * Expression
     | Incoherent of Expression * Incoherence with
     static member private keepOnlyVariables expr =
@@ -74,7 +76,7 @@ and Value =
         | Expression.BinaryNode(op, e1, e2) -> Expression.BinaryNode(op, Value.keepOnlyVariables e1, Value.keepOnlyVariables e2)
     member x.Evaluated = match x with
                          | Constant c -> c
-                         | Provided(v, _)
+                         | Provided(v, _, _)
                          | Computed(v, _) -> v
                          | Incoherent _ -> invalidOp "Trying to evaluate an incoherent value"
     member x.Expression = match x with
@@ -89,7 +91,7 @@ and Value =
     static member (/) (x:Value, y:Value) = Computed(x.Evaluated / y.Evaluated, x.Expression / y.Expression)
     override x.ToString() = match x with
                             | Constant c -> sprintf "%M (constant)" c
-                            | Provided(p, _) -> sprintf "%M (provided)" p
+                            | Provided(p, _, _) -> sprintf "%M (provided)" p
                             | Computed(v, e) -> sprintf "%M (%O)" v (Value.keepOnlyVariables e)
                             | Incoherent(e, Conflict es) -> sprintf "?? (%O, with conflicts between %s)" (Value.keepOnlyVariables e) (System.String.Join(" and ", es |> Seq.map (fun e -> e.ToString())))
                             | Incoherent(e, Propagated) -> sprintf "?? (%O)" (Value.keepOnlyVariables e)

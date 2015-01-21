@@ -27,7 +27,7 @@ namespace ReflectedBindersTests
 
     public class Leg
     {
-        public decimal? Size { get; set; }
+        public SolverValue Size { get; set; }
         public decimal? Delta { get; set; }
     }
 
@@ -77,8 +77,8 @@ namespace ReflectedBindersTests
                         BaseSize = 100M,
                         WeightedDelta = 0.11M,
                         Legs = new [] {
-                            new Leg { Size = 100M, Delta = 0.4M },
-                            new Leg { Size = 100M, Delta = -0.3M }
+                            new Leg { Size = SolverValue.ProvidedNoConflict(100M), Delta = 0.4M },
+                            new Leg { Size = SolverValue.ProvidedNoConflict(100M), Delta = -0.3M }
                         }
                     }
                 }
@@ -90,7 +90,7 @@ namespace ReflectedBindersTests
             var problem = BoundProblem.Create(rules, rfq);
             var incoherencies = problem.Solve();
 
-            Assert.AreEqual(6, incoherencies.Length);
+            Assert.AreEqual(4, incoherencies.Length);
         }
     }
 }

@@ -3,7 +3,7 @@
 open System.Collections.Generic
 open System.Linq.Expressions
 
-type GetterSetter = {
+type DecimalGetterSetter = {
     Get: unit -> decimal option;
     Set: (decimal -> unit) option } with
 
@@ -45,11 +45,41 @@ type GetterSetter = {
                     Some(fun value -> setter.Invoke(data, [| value |]) |> ignore)
         }
 
-type Binder = Binder of variable:Variable * getterSetter:GetterSetter with
-    static member Scoped(property, names) =
-        let scopedVar =
-            match names |> Array.toList with
-            | [] -> failwith "Can't build a scoped binder from a empty array"
-            | local :: scope ->
-                scope |> List.fold (fun s name -> Scoped(name, s)) (Local local)
-        Binder(scopedVar, GetterSetter.FromLambda property)
+type SolverValueGetterSetter =  {
+    Get: unit -> SolverValue option;
+    Set: (SolverValue -> unit) option } with
+
+    static member FromProperty (property:System.Reflection.PropertyInfo, data) =
+        let getter = property.GetGetMethod()
+        let setter = property.GetSetMethod()
+        {
+            Get = fun () ->
+                let value = getter.Invoke(data, [||]) :?> SolverValue
+                if obj.ReferenceEquals(value, null) then None
+                else Some value
+            Set = if setter = null then None
+                  else
+                    Some(fun value -> setter.Invoke(data, [| value |]) |> ignore)
+        }
+
+type GetterSetter = 
+    | DecimalGetterSetter of DecimalGetterSetter
+    | SolverValueGetterSetter of SolverValueGetterSetter with
+    member this.Get() =
+        match this with
+        | SolverValueGetterSetter gs ->
+            gs.Get()
+        | DecimalGetterSetter gs ->
+            // lift the decimal to a solver value
+            gs.Get() |> Option.map (SolverValue.op_Implicit)
+    member this.Set =
+        match this with
+        | SolverValueGetterSetter gs ->
+            gs.Set
+        | DecimalGetterSetter gs ->
+            gs.Set |> Option.map (fun setter -> function
+                                    | SolverValue.Provided(v, _)
+                                    | SolverValue.Computed(v, _) -> setter(v)
+                                    | _ -> ())
+
+type Binder = Binder of variable:Variable * getterSetter:GetterSetter

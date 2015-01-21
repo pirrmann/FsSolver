@@ -15,7 +15,7 @@ let GetRules settings = seq {
         yield !"SomePropertyWithoutSetter" === Const 1M
 
         //exec fees
-        yield ForAllChildren(!"ExecFees" === Σ(!"Size") * ParentVar "FeesPerLot")
+        yield ForAllChildren(!"ExecFees" === Σ(Abs(!"Size")) * ParentVar "FeesPerLot")
         if settings.UseTotalExecFees then
             yield Var "TotalExecFees" === Σ(!"ExecFees")
     }

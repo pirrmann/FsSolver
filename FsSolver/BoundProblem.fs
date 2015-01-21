@@ -10,7 +10,9 @@ module ReflectedBinders =
             let t = data.GetType()
             for pi in t.GetProperties() do
                 if pi.PropertyType = typeof<decimal> || pi.PropertyType = typeof<System.Nullable<decimal>> then
-                    yield Scoped(name, Local pi.Name), GetterSetter.FromProperty(pi, data)
+                    yield Scoped(name, Local pi.Name), DecimalGetterSetter(DecimalGetterSetter.FromProperty(pi, data))
+                elif pi.PropertyType = typeof<SolverValue> then
+                    yield Scoped(name, Local pi.Name), SolverValueGetterSetter(SolverValueGetterSetter.FromProperty(pi, data))
                 else
                     let seqType =
                         pi.PropertyType.GetInterfaces()
@@ -52,17 +54,15 @@ type BoundProblem = {
                     |> Set.ofSeq
                 Bindings =
                     binders
-                    |> Seq.choose (fun (var, gs) -> gs.Get() |> Option.map(fun value -> var |> ProvidedWith value))
+                    |> Seq.choose (fun (var, gs) ->
+                                        gs.Get()
+                                        |> Option.map(fun value -> var, value.BoundTo var))
                     |> Map.ofSeq
             }
         }
 
     static member Create(rules, data) =
         let scope, binders = ReflectedBinders.getScopeAndBinders (ReflectedBinders.typeAsScope data) data
-        BoundProblem.Create(rules, scope, binders)
-
-    static member Create(rules, scope, binders: Binder seq) =
-        let binders = binders |> Seq.map (fun (Binder(var, gs)) -> var, gs)
         BoundProblem.Create(rules, scope, binders)
 
     member p.Solve() =
@@ -84,7 +84,7 @@ type BoundProblem = {
                     | Some binder ->
                         if not (p.Problem.Bindings.ContainsKey binding.Key) then
                             match binder.Set with
-                            | Some setter -> setter(v.Evaluated)
+                            | Some setter -> SolverValue.FromValue v |> setter
                             | None -> () // don't try to set values without setters
                     | None -> () // ignore intermediate unbound value
         } |> Seq.toArray

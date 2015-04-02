@@ -36,30 +36,6 @@ module Solver =
             | _ -> Expression.BinaryNode(op, se1, se2)
         | _ -> expression
 
-    let rec private getVariablesIds expression = seq {
-        match expression with
-        | Expression.UnaryNode(_, e) ->
-            yield! getVariablesIds e
-        | Expression.BinaryNode(_, e1, e2) ->
-            yield! getVariablesIds e1
-            yield! getVariablesIds e2
-        | Expression.Var id -> yield id
-        | _ -> () }
-
-    let private hasVariable = getVariablesIds >> Seq.isEmpty >> not
-
-    let rec private getVariablesInComputedValues expression = seq {
-        match expression with
-        | Expression.UnaryNode(_, e) ->
-            yield! getVariablesInComputedValues e
-        | Expression.BinaryNode(_, e1, e2) ->
-            yield! getVariablesInComputedValues e1
-            yield! getVariablesInComputedValues e2
-        | Expression.Value(Computed(_, e)) ->
-            yield! getVariablesInComputedValues e
-        | Expression.Var id -> yield id
-        | _ -> () }
-
     let rec private getExistingBindings expression = seq {
         match expression with
         | Expression.UnaryNode(_, e) ->
@@ -73,7 +49,7 @@ module Solver =
         | _ -> () }
 
     let private getAllIncoherences e incoherency =
-        getVariablesInComputedValues e
+        Expressions.getVariablesInComputedValues e
         |> Seq.map (fun id -> id, Incoherent(e, incoherency))
 
     let private checkIncoherencies eq = seq {
@@ -152,8 +128,8 @@ module Solver =
         | (e1, e2) as eq ->
             let allVariablesIds =
                 seq {
-                    yield! getVariablesIds e1
-                    yield! getVariablesIds e2
+                    yield! Expressions.getVariablesIds e1
+                    yield! Expressions.getVariablesIds e2
                 } |> Seq.toList
 
             match allVariablesIds.Length with

@@ -90,3 +90,35 @@ and Value =
 and Incoherence =
     | Conflict of Expression list
     | Propagated
+
+module Expressions =
+    
+    let rec internal getVariablesIds expression = seq {
+        match expression with
+        | Expression.UnaryNode(_, e) ->
+            yield! getVariablesIds e
+        | Expression.BinaryNode(_, e1, e2) ->
+            yield! getVariablesIds e1
+            yield! getVariablesIds e2
+        | Expression.Var id -> yield id
+        | _ -> () }
+
+    let rec internal getVariablesInComputedValues expression = seq {
+        match expression with
+        | Expression.UnaryNode(_, e) ->
+            yield! getVariablesInComputedValues e
+        | Expression.BinaryNode(_, e1, e2) ->
+            yield! getVariablesInComputedValues e1
+            yield! getVariablesInComputedValues e2
+        | Expression.Value(Computed(_, e)) ->
+            yield! getVariablesInComputedValues e
+        | Expression.Var id -> yield id
+        | _ -> () }
+
+    let rec combinations set = seq {
+        if not (Set.isEmpty set) then
+            let x = set.MinimumElement
+            let set' = set.Remove x
+            for y in set' do yield x, y
+            yield! combinations set'
+    }

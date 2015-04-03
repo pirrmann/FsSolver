@@ -23,15 +23,16 @@ let [<Test>] ``Weighted delta`` () =
             ]
         }
 
-    let problem = {
-        Rules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
-        Bindings =
-        [
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant -100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant 12.0M
-        ] |> Map.ofList }
+    let problem =
+        { Problem.New with
+            Rules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
+            Bindings =
+            [
+                Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
+                Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "delta"))), Constant 10.0M
+                Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant -100.0M
+                Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "delta"))), Constant 12.0M
+            ] |> Map.ofList }
 
     let newProblem = problem |> Solver.solve
 
@@ -64,14 +65,15 @@ let [<Test>] ``Exec fees`` () =
             ]
         }
 
-    let problem = {
-        Rules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
-        Bindings =
-        [
-            Scoped("rfq", Local "feesPerLot"), Constant 1.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
-            Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
-        ] |> Map.ofList }
+    let problem =
+        { Problem.New with
+            Rules = rules |> Seq.collect (Concretizer.concretizeRule scope) |> Set.ofSeq
+            Bindings =
+            [
+                Scoped("rfq", Local "feesPerLot"), Constant 1.0M
+                Scoped("rfq", Scoped("underlying", Scoped("leg1", Local "size"))), Constant 100.0M
+                Scoped("rfq", Scoped("underlying", Scoped("leg2", Local "size"))), Constant 100.0M
+            ] |> Map.ofList }
 
     let newProblem = problem |> Solver.solve
 

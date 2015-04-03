@@ -4,7 +4,8 @@ open FsSolver.Rules
 
 type Problem = {
     Rules: Set<Expression * Expression>
-    Bindings: Map<Variable, Value> }
+    Bindings: Map<Variable, Value> } with
+    static member New = { Rules = Set.empty; Bindings = Map.empty }
 
 module Solver =
 

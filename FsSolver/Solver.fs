@@ -4,9 +4,14 @@ open FsSolver.Rules
 
 type Problem = {
     Rules: Set<Expression * Expression>
-    Bindings: Map<Variable, Value> } with
-    static member New = { Rules = Set.empty; Bindings = Map.empty }
-
+    Bindings: Map<Variable, Value>
+    Links: Set<Link> } with
+    static member New = { Rules = Set.empty; Bindings = Map.empty; Links = Set.empty }
+    static member Create (rules, bindings) = {
+        Rules = rules
+        Bindings = bindings
+        Links = rules |> Seq.collect Links.Extract |> Set.ofSeq }
+        
 module Solver =
 
     let rec private replaceValues values expression =
@@ -183,7 +188,7 @@ module Solver =
             unifiedNewBindings
             |> Seq.fold addBinding problem.Bindings
     
-        {
+        { problem with
             Rules = remainingRules
             Bindings = allBindings
         }

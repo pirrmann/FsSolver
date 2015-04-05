@@ -60,6 +60,7 @@
     <Compile Include="Rules.fs" />
     <Compile Include="Notations.fs" />
     <Compile Include="Concretizer.fs" />
+    <Compile Include="Links.fs" />
     <Compile Include="Solver.fs" />
     <Compile Include="BoundProblem.fs" />
   </ItemGroup>

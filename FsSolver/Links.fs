@@ -4,6 +4,7 @@ open FsSolver.Rules
 
 type Link (x:Variable, y:Variable) =
     member private this.value = if x < y then x, y else y, x
+    member this.Tips = Set.ofList [x; y]
     override x.Equals(yobj) =
         match yobj with
         | :? Link as y -> (x.value = y.value)

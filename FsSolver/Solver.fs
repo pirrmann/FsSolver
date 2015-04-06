@@ -17,8 +17,9 @@ module Solver =
         match expression with
         | Expression.Var(id) as v ->
             match Map.tryFind id values with
-            | Some(value:Value) -> Expression.Value(Computed(value.Evaluated, v))
-            | None -> v
+            | Some(Constant _ as value)
+            | Some(Computed(_, _) as value) -> Expression.Value(Computed(value.Evaluated, v))
+            | _ -> v
         | Expression.UnaryNode(op, e) ->
             Expression.UnaryNode(op, replaceValues values e)
         | Expression.BinaryNode(op, e1, e2) ->
@@ -162,6 +163,7 @@ module Solver =
             newBindings
             |> Seq.filter (function | _, (v, Computed(_, Expression.Var v')) when v = v' -> false | _ -> true)
 
+        // check that we have a single value for each variable
         let unifyValues id values =
             match values |> Seq.tryPick (fun v -> match v with | Incoherent(_, _) as i -> Some(i) | _ -> None) with
             | Some i -> id, i
@@ -186,10 +188,43 @@ module Solver =
         let allBindings =
             unifiedNewBindings
             |> Seq.fold addBinding problem.Bindings
-    
+
+        // propagate incoherencies
+        let rec propagate acc incoherentVariables =
+            let newVariables =
+                (seq {
+                    for incoherentVariable in incoherentVariables do
+                    for link in problem.Links do
+                    if link.Tips.Contains(incoherentVariable) then
+                        yield! link.Tips.Remove(incoherentVariable)
+                } |> Set.ofSeq) - acc
+            if newVariables.IsEmpty then acc
+            else
+                propagate (acc + newVariables) newVariables
+
+        let newIncoherencies =
+            unifiedNewBindings
+            |> Seq.choose (fun (id, value) -> match value with | Incoherent(_, _) -> Some id | _ -> None)
+            |> Set.ofSeq
+
+        let propagatedIncoherencies =
+            (propagate Set.empty newIncoherencies) - newIncoherencies
+            |> Seq.choose (fun id ->
+                            match allBindings.TryFind id with
+                            | Some(Incoherent(_, _)) -> None // already incoherent
+                            | Some(Constant(v))
+                            | Some(Computed(v, _)) ->
+                                Some(id, Incoherent(ComputedValue(v, Expression.Var id), Propagated))
+                            | None ->
+                                Some (id, Incoherent(Expression.Var id, Propagated)))
+  
+        let allBindingsWithPropagatedIncoherencies =
+            propagatedIncoherencies
+            |> Seq.fold addBinding allBindings
+
         { problem with
             Rules = remainingRules
-            Bindings = allBindings
+            Bindings = allBindingsWithPropagatedIncoherencies
         }
 
     let rec solve problem =

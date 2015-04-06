@@ -90,7 +90,7 @@ namespace ReflectedBindersTests
             var problem = BoundProblem.Create(rules, rfq);
             var incoherencies = problem.Solve();
 
-            Assert.AreEqual(6, incoherencies.Length);
+            Assert.AreEqual(9, incoherencies.Length);
         }
     }
 }

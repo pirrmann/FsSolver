@@ -14,6 +14,7 @@ type Link (x:Variable, y:Variable) =
           match yobj with
           | :? Link as y -> compare x.value y.value
           | _ -> invalidArg "yobj" "cannot compare values of different types"
+    override x.ToString() = sprintf "Link(%A)" x.value
 
 module Links =
     let Extract (expr1:Expression, expr2:Expression) =

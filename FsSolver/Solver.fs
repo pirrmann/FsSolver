@@ -6,10 +6,9 @@ type Problem = {
     Rules: Set<Expression * Expression>
     Bindings: Map<Variable, Value>
     Links: Set<Link> } with
-    static member New = { Rules = Set.empty; Bindings = Map.empty; Links = Set.empty }
-    static member Create (rules, bindings) = {
-        Rules = rules
-        Bindings = bindings
+    static member Create (rules, ?bindings) = {
+        Rules = rules |> Set.ofSeq
+        Bindings = defaultArg bindings Map.empty
         Links = rules |> Seq.collect Links.Extract |> Set.ofSeq }
         
 module Solver =

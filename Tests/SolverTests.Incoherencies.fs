@@ -89,3 +89,44 @@ let [<Test>] ``A false relation including two different variables causes a confl
         |> should equal (Map.ofList [Local "x", Incoherent(ComputedValue(3M, ComputedValue(1M, LocalVar "x") + ComputedValue(2M, LocalVar "y")), Conflict([ComputedValue(3M, ComputedValue(1M, LocalVar "x") + ComputedValue(2M, LocalVar "y")); ConstValue 1M]))
                                      Local "y", Incoherent(ComputedValue(3M, ComputedValue(1M, LocalVar "x") + ComputedValue(2M, LocalVar "y")), Conflict([ComputedValue(3M, ComputedValue(1M, LocalVar "x") + ComputedValue(2M, LocalVar "y")); ConstValue 1M]))])
     newProblem.Links |> should equal (Set.ofList [Link(Local "x", Local "y")])
+
+let [<Test>] ``Incoherencies are back propagated to all variables - level 1`` () =
+    let problem =
+        Problem.Create(
+            [
+                LocalVar "x" =@= ConstValue 1M
+                LocalVar "y" =@= ConstValue 2M
+                LocalVar "z" =@= ConstValue 2M
+                LocalVar "x" =@= LocalVar "y"
+                LocalVar "y" =@= LocalVar "z"
+            ])
+
+    let newProblem = problem |> Solver.solve
+
+    newProblem.Rules |> should equal Set.empty
+    newProblem.Bindings
+        |> should equal (Map.ofList [Local "x", Incoherent(ComputedValue(1M, LocalVar "x"), Conflict([ComputedValue(1M, LocalVar "x"); ComputedValue(2M, LocalVar "y")]))
+                                     Local "y", Incoherent(ComputedValue(2M, LocalVar "y"), Conflict([ComputedValue(1M, LocalVar "x"); ComputedValue(2M, LocalVar "y")]))
+                                     Local "z", Incoherent(ComputedValue(2M, LocalVar "z"), Propagated)])
+    newProblem.Links |> should equal (Set.ofList [Link(Local "x", Local "y")
+                                                  Link(Local "y", Local "z")])
+
+let [<Test>] ``Incoherencies are back propagated to all variables - level 2`` () =
+    let problem =
+        Problem.Create(
+            [
+                LocalVar "x" =@= ConstValue 1M
+                LocalVar "y" =@= LocalVar "x" + ConstValue 1M
+                LocalVar "z" =@= LocalVar "y" + ConstValue 1M
+                LocalVar "z" =@= LocalVar "y" - ConstValue 1M
+            ])
+
+    let newProblem = problem |> Solver.solve
+
+    newProblem.Rules |> should equal Set.empty
+    newProblem.Bindings
+        |> should equal (Map.ofList [Local "x", Incoherent(ComputedValue(1M, LocalVar "x"), Propagated)
+                                     Local "y", Incoherent(ComputedValue(2M, LocalVar "y"), Propagated)
+                                     Local "z", Incoherent(LocalVar "z", Conflict([ComputedValue(2M, LocalVar "y") - ConstValue 1M; ComputedValue(2M, LocalVar "y") + ConstValue 1M]))])
+    newProblem.Links |> should equal (Set.ofList [Link(Local "x", Local "y")
+                                                  Link(Local "y", Local "z")])

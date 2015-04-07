@@ -59,6 +59,7 @@
     <Compile Include="Rules.fs" />
     <Compile Include="Notations.fs" />
     <Compile Include="Concretizer.fs" />
+    <Compile Include="Links.fs" />
     <Compile Include="Solver.fs" />
     <Compile Include="SolverValue.fs" />
     <Compile Include="Binders.fs" />

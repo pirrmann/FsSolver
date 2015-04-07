@@ -43,14 +43,14 @@ let [<Test>] ``Sum is replaced by its concrete value for several children`` () =
 
     expression |> should equal (ConstValue 1M + ConstValue 1M + ConstValue 1M)
 
-let [<Test>] ``Children variables are scoped in the conrete sum (single leg)`` () =
+let [<Test>] ``Children variables are scoped in the conrete sum - single leg`` () =
     let node = Sum (Var "x")
     let scope = { Scope.Named "root" with Children = [Scope.Named "child"] }
     let expression = node |> Concretizer.concretize scope
 
     expression |> should equal (ScopedVar ["x"; "child"; "root"])
 
-let [<Test>] ``Children variables are scoped in the concrete sum (several legs)`` () =
+let [<Test>] ``Children variables are scoped in the concrete sum - several legs`` () =
     let node = Sum (Var "x")
     let scope = { Scope.Named "root" with Children = [Scope.Named "child1"
                                                       Scope.Named "child2"] }

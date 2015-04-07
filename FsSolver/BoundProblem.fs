@@ -47,18 +47,16 @@ type BoundProblem = {
         {
             Binders = binders |> Map.ofSeq
             Problem =
-            {
-                Rules =
+                Problem.Create(
                     rules
                     |> Seq.collect (Concretizer.concretizeRule scope)
-                    |> Set.ofSeq
-                Bindings =
+                    |> Set.ofSeq,
                     binders
                     |> Seq.choose (fun (var, gs) ->
                                         gs.Get()
                                         |> Option.map(fun value -> var, value.BoundTo var))
                     |> Map.ofSeq
-            }
+            )
         }
 
     static member Create(rules, data) =

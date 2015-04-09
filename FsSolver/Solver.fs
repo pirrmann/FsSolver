@@ -158,7 +158,7 @@ module Solver =
         // remove the rules where there is nothing more to solve
         let remainingRules =
             simplifiedRules - (newBindings |> Seq.map fst |> Set.ofSeq)
-        
+
         // remove the useless bindings that were just needed to get rid of the rules (to be refactored)
         let useFullNewBindings =
             newBindings
@@ -178,9 +178,16 @@ module Solver =
                                     |> Seq.toList
                                     |> Conflict)
 
+        // isolate variables that do not propagate incoherencies
+        let neverConflictingVariables =
+            problem.Bindings
+            |> Seq.choose (fun kvp -> match kvp.Value with | Provided(_, id, ConflictHandlingStrategy.Ignore) -> Some id | _ -> None)
+            |> Set.ofSeq
+    
         let unifiedNewBindings =
             useFullNewBindings
             |> Seq.map snd
+            |> Seq.filter (fun (id, _) -> not(neverConflictingVariables.Contains(id)))
             |> Seq.groupBy fst
             |> Seq.map (fun (id, values) -> unifyValues id (values |> Seq.map snd))
 
@@ -189,7 +196,7 @@ module Solver =
         let allBindings =
             unifiedNewBindings
             |> Seq.fold addBinding problem.Bindings
-    
+
         // propagate incoherencies
         let rec propagate acc incoherentVariables =
             let newVariables =
@@ -197,7 +204,7 @@ module Solver =
                     for incoherentVariable in incoherentVariables do
                     for link in problem.Links do
                     if link.Tips.Contains(incoherentVariable) then
-                        yield! link.Tips.Remove(incoherentVariable)
+                        yield! link.Tips.Remove(incoherentVariable) |> Seq.filter (fun id -> not(neverConflictingVariables.Contains(id)))
                 } |> Set.ofSeq) - acc
             if newVariables.IsEmpty then acc
             else

@@ -77,8 +77,8 @@ namespace ReflectedBindersTests
                         BaseSize = 100M,
                         WeightedDelta = 0.11M,
                         Legs = new [] {
-                            new Leg { Size = SolverValue.ProvidedNoConflict(100M), Delta = 0.4M },
-                            new Leg { Size = SolverValue.ProvidedNoConflict(100M), Delta = -0.3M }
+                            new Leg { Size = SolverValue.NewProvidedNoConflict(100M), Delta = 0.4M },
+                            new Leg { Size = SolverValue.NewProvidedNoConflict(100M), Delta = -0.3M }
                         }
                     }
                 }

@@ -15,8 +15,9 @@ namespace SampleWpfApp
                 return null;
             }
 
-            //return solverValue.DecimalValue.ToString(culture);
-            return null;
+            var nullableValue = solverValue.AsNullable;
+
+            return nullableValue.HasValue ? nullableValue.Value.ToString(culture) : null;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

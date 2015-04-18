@@ -93,11 +93,14 @@ and Value =
                             | Constant c -> sprintf "%M (constant)" c
                             | Provided(p, _, _) -> sprintf "%M (provided)" p
                             | Computed(v, e) -> sprintf "%M (%O)" v (Value.keepOnlyVariables e)
-                            | Incoherent(e, Conflict es) -> sprintf "?? (%O, with conflicts between %s)" (Value.keepOnlyVariables e) (System.String.Join(" and ", es |> Seq.map (fun e -> e.ToString())))
-                            | Incoherent(e, Propagated) -> sprintf "?? (%O)" (Value.keepOnlyVariables e)
+                            | Incoherent(e, inc) -> sprintf "?? (%O, %O)" (Value.keepOnlyVariables e) inc
 and Incoherence =
     | Conflict of Expression list
-    | Propagated
+    | Propagated with
+    override x.ToString() =
+        match x with
+        | Conflict es -> sprintf "Conflicts between %s" (System.String.Join(" and ", es |> Seq.map (fun e -> e.ToString())))
+        | Propagated -> "Propagated conflict"
 
 module Expressions =
     

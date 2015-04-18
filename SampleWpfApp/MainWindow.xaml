@@ -6,45 +6,55 @@
     <Window.Resources>
         <CollectionViewSource x:Key="viewModelViewSource" d:DesignSource="{d:DesignInstance {x:Type local:ViewModel}, CreateList=True}"/>
         <local:SolverValueConverter x:Key="SolverValueConverter" />
+        <local:SolverValueTooltipConverter x:Key="SolverValueTooltipConverter" />
     </Window.Resources>
     <Grid DataContext="{StaticResource viewModelViewSource}">
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="95,55,0,0" TextWrapping="Wrap" Text="{Binding X, Mode=TwoWay, NotifyOnValidationError=true, ValidatesOnExceptions=true, Converter={StaticResource SolverValueConverter}}" VerticalAlignment="Top" Width="120">
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="95,55,0,0" VerticalAlignment="Top" Width="120" TextWrapping="Wrap" 
+                 Text="{Binding X, Mode=TwoWay, NotifyOnValidationError=true, ValidatesOnExceptions=true, Converter={StaticResource SolverValueConverter}}"
+                 ToolTip="{Binding X, Mode=OneWay, Converter={StaticResource SolverValueTooltipConverter}}">
             <TextBox.Style>
                 <Style TargetType="TextBox">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Path=X.IsComputed}" Value="True">
                             <Setter Property="Background" Value="Green" />
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding Path=X.IsConflict}" Value="True">
+                        <DataTrigger Binding="{Binding Path=X.HasIncoherence}" Value="True">
                             <Setter Property="Background" Value="Red" />
+                            <Setter Property="FontWeight" Value="Bold" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </TextBox.Style>
         </TextBox>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="95,105,0,0" TextWrapping="Wrap" Text="{Binding Y, Mode=TwoWay, NotifyOnValidationError=true, ValidatesOnExceptions=true, Converter={StaticResource SolverValueConverter}}" VerticalAlignment="Top" Width="120">
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="95,105,0,0" VerticalAlignment="Top" Width="120" TextWrapping="Wrap" 
+                 Text="{Binding Y, Mode=TwoWay, NotifyOnValidationError=true, ValidatesOnExceptions=true, Converter={StaticResource SolverValueConverter}}"
+                 ToolTip="{Binding Y, Mode=OneWay, Converter={StaticResource SolverValueTooltipConverter}}">
             <TextBox.Style>
                 <Style TargetType="TextBox">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Path=Y.IsComputed}" Value="True">
                             <Setter Property="Background" Value="Green" />
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding Path=Y.IsConflict}" Value="True">
+                        <DataTrigger Binding="{Binding Path=Y.HasIncoherence}" Value="True">
                             <Setter Property="Background" Value="Red" />
+                            <Setter Property="FontWeight" Value="Bold" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </TextBox.Style>
         </TextBox>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="95,155,0,0" TextWrapping="Wrap" Text="{Binding Z, Mode=TwoWay, NotifyOnValidationError=true, ValidatesOnExceptions=true, Converter={StaticResource SolverValueConverter}}" VerticalAlignment="Top" Width="120">
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="95,155,0,0" VerticalAlignment="Top" Width="120" TextWrapping="Wrap" 
+                 Text="{Binding Z, Mode=TwoWay, NotifyOnValidationError=true, ValidatesOnExceptions=true, Converter={StaticResource SolverValueConverter}}"
+                 ToolTip="{Binding Z, Mode=OneWay, Converter={StaticResource SolverValueTooltipConverter}}">
             <TextBox.Style>
                 <Style TargetType="TextBox">
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Path=Z.IsComputed}" Value="True">
                             <Setter Property="Background" Value="Green" />
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding Path=Z.IsConflict}" Value="True">
+                        <DataTrigger Binding="{Binding Path=Z.HasIncoherence}" Value="True">
                             <Setter Property="Background" Value="Red" />
+                            <Setter Property="FontWeight" Value="Bold" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>

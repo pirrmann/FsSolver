@@ -54,9 +54,9 @@ type SolverValueGetterSetter =  {
         let setter = property.GetSetMethod()
         {
             Get = fun () ->
-                let value = getter.Invoke(data, [||]) :?> SolverValue
-                if obj.ReferenceEquals(value, null) then None
-                else Some value
+                match getter.Invoke(data, [||]) with
+                | :? SolverValue as value -> Some value
+                | _ -> None
             Set = if setter = null then None
                   else
                     Some(fun value -> setter.Invoke(data, [| value |]) |> ignore)

@@ -1,0 +1,23 @@
+type project
+owners
+    Pierre Irrmann
+authors 
+    Pierre Irrmann
+projectUrl
+    http://github.com/pirrmann/FsSolver
+iconUrl
+    https://raw.githubusercontent.com/pirrmann/FsSolver/master/docs/files/img/logo.png
+licenseUrl
+    http://github.com/pirrmann/FsSolver/blob/master/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+tags
+    fsharp solver
+summary
+    A small linear equations solver experiment
+description
+    This project can be used to solve simple linear equations. It can be useful to express computation rules in a clear way.
+
+
